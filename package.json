@@ -1,0 +1,24 @@
+{
+  "name": "eve-wh-bot",
+  "version": "1.0.0",
+  "description": "A utility bot designed for Unchained Alliance",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/billytheme/EVE-WH-BOT.git"
+  },
+  "author": "billytheme",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/billytheme/EVE-WH-BOT/issues"
+  },
+  "homepage": "https://github.com/billytheme/EVE-WH-BOT#readme"
+}
