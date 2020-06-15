@@ -43,3 +43,5 @@ yarn.lock
 # VS Code generated files
 .vscode
 
+# ignore instance-specific data files
+data

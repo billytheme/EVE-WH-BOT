@@ -2,23 +2,112 @@
 import * as discord from "discord.js";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
+import * as esijs from "esijs"
 
-dotenv.config()
+//We still need to record the messageID of the last parsed message for when we crash and resume
 
-let client = new discord.Client();
+//Generic command to initialise the dotenv library
+dotenv.config();
 
-let wormholeDictionary = {};
-let systemDictionary = {};
-let scannerDictionary = {};
-let killerDictionary = {};
+//Initialise the client
+let client: discord.Client = new discord.Client();
+
+//Create storage for the various databases
+let wormholeDictionary: Record<number, Record<'source' | 'target', number>> = {};
+let systemDictionary: Record<number, number> = {};
+let scannerDictionary: Record<number, number> = {};
+let killerDictionary: Record<number, number> = {};
+
+//Read and parse wormhole dictionary
+fs.readFile("data/wormholeDictionary.json", 'utf-8', function (err, fileData) {
+    try {
+        wormholeDictionary = JSON.parse(fileData);
+    }
+    catch (err) {
+        wormholeDictionary = {}
+    }
+})
+
+//Read and parse system dictionary
+fs.readFile("data/systemDictionary.json", 'utf-8', function (err, fileData) {
+    try {
+        systemDictionary = JSON.parse(fileData)
+    }
+    catch (err) {
+        wormholeDictionary = {}
+    }
+})
+
+function writeWormholeDictionary() {
+    fs.writeFile("data/wormholeDictionary.json", JSON.stringify(wormholeDictionary), function (err) {throw err});
+}
+
+function writeSystemDictionary() {
+    fs.writeFile("data/systemDictionary.json", JSON.stringify(systemDictionary), function (err) {throw err});
+}
 
 function parseUpdate(embed: discord.MessageEmbed) {
+    //Switch for the three types of message: Created, Updated, or Deleted
+    //Both created and updated will give new info to store. JS allows us to treat them the same
     switch (embed.title.split(' ')[0]) {
-        case "Updated":
-            break;
         case "Created":
+        case "Updated":
+            //Switch for either:
+            //  connection: Create a new ID (for identification when deleting), and source and target system
+            //  system: Create new ID (for identification when deleting), and EvE system ID
+            switch (embed.title.split(' ')[1]) {
+                case "connection":
+                    const wormholeDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
+                    //Initialise the record if not already existing
+                    if (wormholeDictionary[wormholeDatabaseID] === undefined) {
+                        wormholeDictionary[wormholeDatabaseID] = { 'source': undefined, 'target': undefined }
+                    }
+                    //Loop through the information provided and store it
+                    //we only care about the source and target here
+                    embed.description.replace(/`/g, '').split(',').forEach(element => {
+                        let debug = element.slice(0, element.lastIndexOf(':')).trim()
+                        switch (element.slice(0, element.lastIndexOf(':')).trim()) {
+                            case "source":
+                                let source = element.slice(element.lastIndexOf('➜') + 1).trim();
+                                wormholeDictionary[wormholeDatabaseID]['source'] = Number(source);
+                                break;
+                            case "target":
+                                let target = element.slice(element.lastIndexOf('➜') + 1).trim();
+                                wormholeDictionary[wormholeDatabaseID]['target'] = Number(target);
+                                break;
+                        }
+                    });
+
+                    writeWormholeDictionary();
+                    break;
+                case "system":
+                    //Grab the system database ID and name from the message, then translate the name to an eve ID
+                    //We don't need to worry about the contents of the description, as we only care about the 
+                    //database ID to eve ID mapping
+                    const systemDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
+                    const systemName = embed.title.slice(embed.title.indexOf("'") + 1, embed.title.lastIndexOf("'"))
+                    esijs.search.search(systemName, 'solar_system', true).then((solarSystemID: Array<number>) => {
+                        systemDictionary[systemDatabaseID] = solarSystemID['solar_system'][0];
+                        writeSystemDictionary();
+                    });
+                    break;
+            }
             break;
         case "Deleted":
+            switch (embed.title.split(' ')[1]) {
+                case "connection":
+                    //Parse the wormhole ID and delete it from memory
+                    const wormholeDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
+                    delete wormholeDictionary[wormholeDatabaseID];
+                    writeWormholeDictionary();
+                    break;
+                case "system":
+                    //Parse the system Database ID and delete it from memory
+                    const systemDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
+                    delete systemDictionary[systemDatabaseID];
+                    writeSystemDictionary();
+                    break;
+            }
             break;
     }
 }
@@ -27,7 +116,7 @@ client.on('message', function (message) {
 
     if (message.embeds.length != 0) {
         message.embeds.forEach(element => {
-            if (element.footer === "Pathfinder API") {
+            if (element.footer.text === "Pathfinder API") {
                 parseUpdate(element);
             }
         });
