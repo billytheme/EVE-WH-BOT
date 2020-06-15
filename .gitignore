@@ -40,5 +40,8 @@ dist/**/*
 # ignore yarn.lock
 yarn.lock
 
-#VS Code generated files
+# VS Code generated files
 .vscode
+
+# ignore instance-specific data files
+data
