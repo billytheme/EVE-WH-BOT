@@ -39,11 +39,11 @@ fs.readFile("data/systemDictionary.json", 'utf-8', function (err, fileData) {
 })
 
 function writeWormholeDictionary() {
-    fs.writeFile("data/wormholeDictionary.json", JSON.stringify(wormholeDictionary), function (err) {throw err});
+    fs.writeFile("data/wormholeDictionary.json", JSON.stringify(wormholeDictionary), function (err) {});
 }
 
 function writeSystemDictionary() {
-    fs.writeFile("data/systemDictionary.json", JSON.stringify(systemDictionary), function (err) {throw err});
+    fs.writeFile("data/systemDictionary.json", JSON.stringify(systemDictionary), function (err) {});
 }
 
 function parseUpdate(embed: discord.MessageEmbed) {
