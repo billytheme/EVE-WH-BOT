@@ -18,32 +18,25 @@ let systemDictionary: Record<number, number> = {};
 let scannerDictionary: Record<number, number> = {};
 let killerDictionary: Record<number, number> = {};
 
-//Read and parse wormhole dictionary
-fs.readFile("data/wormholeDictionary.json", 'utf-8', function (err, fileData) {
-    try {
-        wormholeDictionary = JSON.parse(fileData);
-    }
-    catch (err) {
-        wormholeDictionary = {}
-    }
-})
-
-//Read and parse system dictionary
-fs.readFile("data/systemDictionary.json", 'utf-8', function (err, fileData) {
-    try {
-        systemDictionary = JSON.parse(fileData)
-    }
-    catch (err) {
-        wormholeDictionary = {}
-    }
-})
-
 function writeWormholeDictionary() {
-    fs.writeFile("data/wormholeDictionary.json", JSON.stringify(wormholeDictionary), function (err) {});
+    fs.writeFileSync("data/wormholeDictionary.json", JSON.stringify(wormholeDictionary));
 }
 
 function writeSystemDictionary() {
-    fs.writeFile("data/systemDictionary.json", JSON.stringify(systemDictionary), function (err) {});
+    fs.writeFileSync("data/systemDictionary.json", JSON.stringify(systemDictionary));
+}
+
+function writeLastParsedMessage(messageID: string) {
+    fs.writeFile('data/lastParsedMessage.txt', messageID, function (err) {
+        if (err) {
+            console.error(err);
+        }
+    })
+}
+
+function readLastParsedMessage(): string {
+    let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', 'utf-8')
+    return lastParsedMessage;
 }
 
 function parseUpdate(embed: discord.MessageEmbed) {
@@ -94,6 +87,7 @@ function parseUpdate(embed: discord.MessageEmbed) {
             }
             break;
         case "Deleted":
+            //When we delete, we only want to parse the Database ID so we can delete the entry
             switch (embed.title.split(' ')[1]) {
                 case "connection":
                     //Parse the wormhole ID and delete it from memory
@@ -114,10 +108,13 @@ function parseUpdate(embed: discord.MessageEmbed) {
 
 client.on('message', function (message) {
 
+    //If the message contains embeds, have a look at them
     if (message.embeds.length != 0) {
         message.embeds.forEach(element => {
+            //Rudimentary check that the embed came from the Pathfinder API. Needs to be improved
             if (element.footer.text === "Pathfinder API") {
                 parseUpdate(element);
+                writeLastParsedMessage(message.id);
             }
         });
     }
@@ -224,4 +221,52 @@ client.on('message', function (message) {
     }
 
 });
+
+//Once ready, load any messages we missed and parse them into memory
+client.on('ready', function () {
+    let lastParsedMessage = readLastParsedMessage();
+    if (lastParsedMessage !== undefined && lastParsedMessage !== '') {
+        let channel = <discord.TextChannel>client.channels.cache.get(process.env.UPDATES_CHANNEL);
+        channel.messages.fetch({ after: readLastParsedMessage() }).then(function (messages) {
+            messages.array().reverse().forEach(message => {
+                message.embeds.forEach(embed => {
+                    //Rudimentary check that the embed came from the Pathfinder API. Needs to be improved
+                    if (embed.footer.text === "Pathfinder API") {
+                        parseUpdate(embed);
+                    }
+                });
+                writeLastParsedMessage(message.id);
+            });
+        })
+    }
+});
+
+//Now that we've set the application up, we load stored data, and connect to discord
+
+//Read and parse wormhole dictionary
+fs.readFile("data/wormholeDictionary.json", 'utf-8', function (err, fileData) {
+    if (err) {
+        console.error(err);
+    }
+    try {
+        wormholeDictionary = JSON.parse(fileData);
+    }
+    catch (err) {
+        wormholeDictionary = {}
+    }
+})
+
+//Read and parse system dictionary
+fs.readFile("data/systemDictionary.json", 'utf-8', function (err, fileData) {
+    if (err) {
+        console.error(err);
+    }
+    try {
+        systemDictionary = JSON.parse(fileData)
+    }
+    catch (err) {
+        wormholeDictionary = {}
+    }
+})
+
 client.login(process.env.CLIENT_SECRET_KEY);
