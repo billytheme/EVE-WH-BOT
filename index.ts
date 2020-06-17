@@ -21,15 +21,15 @@ let scannerDictionary: Record<number, number> = {};
 let killerDictionary: Record<number, number> = {};
 
 function writeWormholeDictionary() {
-    fs.writeFileSync("data/wormholeDictionary.json", JSON.stringify(wormholeDictionary), 'w');
+    fs.writeFileSync("data/wormholeDictionary.json", JSON.stringify(wormholeDictionary));
 }
 
 function writeSystemDictionary() {
-    fs.writeFileSync("data/systemDictionary.json", JSON.stringify(systemDictionary), 'w');
+    fs.writeFileSync("data/systemDictionary.json", JSON.stringify(systemDictionary));
 }
 
 function writeLastParsedMessage(messageID: string) {
-    fs.writeFileSync('data/lastParsedMessage.txt', messageID, 'w')
+    fs.writeFileSync('data/lastParsedMessage.txt', messageID)
 }
 
 function readLastParsedMessage(): string {
