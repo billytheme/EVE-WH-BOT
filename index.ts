@@ -34,7 +34,7 @@ function writeLastParsedMessage(messageID: string) {
 
 function readLastParsedMessage(): string {
     try {
-        let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', 'utf-8')
+        let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', {encoding: 'utf-8', flag: 'w+'});
         return lastParsedMessage;
     }
     catch (err) {
@@ -322,7 +322,7 @@ client.on('ready', function () {
 //Now that we've set the application up, we load stored data, and connect to discord
 
 //Read and parse wormhole dictionary
-fs.readFile("data/wormholeDictionary.json", 'utf-8', function (err, fileData) {
+fs.readFile("data/wormholeDictionary.json", {encoding: 'utf-8', flag: 'w+'}, function (err, fileData) {
     if (err) {
         console.error(err);
     }
@@ -335,7 +335,7 @@ fs.readFile("data/wormholeDictionary.json", 'utf-8', function (err, fileData) {
 })
 
 //Read and parse system dictionary
-fs.readFile("data/systemDictionary.json", 'utf-8', function (err, fileData) {
+fs.readFile("data/systemDictionary.json", {encoding: 'utf-8', flag: 'w+'}, function (err, fileData) {
     if (err) {
         console.error(err);
     }
