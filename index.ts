@@ -3,7 +3,8 @@ import * as discord from "discord.js";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as esijs from "esijs"
-import * as WebSocket from "ws"
+import * as webSocket from "ws"
+import * as pathfinder from "./pathfinderParse"
 
 //Generic command to initialise the dotenv library
 dotenv.config();
@@ -12,169 +13,10 @@ dotenv.config();
 let client: discord.Client = new discord.Client();
 
 //Initialise the Websocket for the zKill API
-let zKill = new WebSocket("wss://zkillboard.com:2096")
+let zKill = new webSocket("wss://zkillboard.com:2096")
 
-//Create storage for the various databases
-let wormholeDictionary: Record<number, Record<'source' | 'target', number>> = {};
-let systemDictionary: Record<number, number> = {};
 let scannerDictionary: Record<number, number> = {};
 let killerDictionary: Record<number, number> = {};
-
-function writeWormholeDictionary() {
-    fs.writeFileSync("data/wormholeDictionary.json", JSON.stringify(wormholeDictionary));
-}
-
-function writeSystemDictionary() {
-    fs.writeFileSync("data/systemDictionary.json", JSON.stringify(systemDictionary));
-}
-
-function writeLastParsedMessage(messageID: string) {
-    fs.writeFileSync('data/lastParsedMessage.txt', messageID)
-}
-
-function readLastParsedMessage(): string {
-    try {
-        let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', {encoding: 'utf-8', flag: 'w+'});
-        return lastParsedMessage;
-    }
-    catch (err) {
-        return "";
-    }
-}
-
-function parseUpdate(embed: discord.MessageEmbed) {
-    //Switch for the three types of message: Created, Updated, or Deleted
-    //Both created and updated will give new info to store. JS allows us to treat them the same
-    switch (embed.title.split(' ')[0]) {
-        case "Created":
-        case "Updated":
-            //Switch for either:
-            //  connection: Create a new ID (for identification when deleting), and source and target system
-            //  system: Create new ID (for identification when deleting), and EvE system ID
-            switch (embed.title.split(' ')[1]) {
-                case "connection":
-                    const wormholeDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
-                    //Initialise the record if not already existing
-                    if (wormholeDictionary[wormholeDatabaseID] === undefined) {
-                        wormholeDictionary[wormholeDatabaseID] = { 'source': undefined, 'target': undefined }
-                    }
-                    //Loop through the information provided and store it
-                    //we only care about the source and target here
-                    embed.description.replace(/`/g, '').split(',').forEach(element => {
-                        let debug = element.slice(0, element.lastIndexOf(':')).trim()
-                        switch (element.slice(0, element.lastIndexOf(':')).trim()) {
-                            case "source":
-                                let source = element.slice(element.lastIndexOf('➜') + 1).trim();
-                                wormholeDictionary[wormholeDatabaseID].source = Number(source);
-                                break;
-                            case "target":
-                                let target = element.slice(element.lastIndexOf('➜') + 1).trim();
-                                wormholeDictionary[wormholeDatabaseID].target = Number(target);
-                                break;
-                        }
-                    });
-
-                    writeWormholeDictionary();
-                    break;
-                case "system":
-                    //Grab the system database ID and name from the message, then translate the name to an eve ID
-                    //We don't need to worry about the contents of the description, as we only care about the 
-                    //database ID to eve ID mapping
-                    const systemDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
-                    const systemName = embed.title.slice(embed.title.indexOf("'") + 1, embed.title.lastIndexOf("'"))
-                    esijs.search.search(systemName, 'solar_system', true).then((solarSystemID) => {
-                        systemDictionary[systemDatabaseID] = solarSystemID.solar_system[0];
-                        writeSystemDictionary();
-                    });
-                    break;
-            }
-            break;
-        case "Deleted":
-            //When we delete, we only want to parse the Database ID so we can delete the entry
-            switch (embed.title.split(' ')[1]) {
-                case "connection":
-                    //Parse the wormhole ID and delete it from memory
-                    const wormholeDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
-                    delete wormholeDictionary[wormholeDatabaseID];
-                    writeWormholeDictionary();
-                    break;
-                case "system":
-                    //Parse the system Database ID and delete it from memory
-                    const systemDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
-                    delete systemDictionary[systemDatabaseID];
-                    writeSystemDictionary();
-                    break;
-            }
-            break;
-    }
-}
-
-function getConnectedSystems(): Array<number> {
-    let connectedSystems = [Number(process.env.HOME_SYSTEM)];
-
-    let foundNewConnections: boolean;
-    do {
-        foundNewConnections = false;
-        for (const wormhole in wormholeDictionary) {
-            if (wormholeDictionary[wormhole].source in connectedSystems) {
-                connectedSystems.concat(systemDictionary[wormholeDictionary[wormhole].target]);
-                foundNewConnections = true;
-            }
-            if (wormholeDictionary[wormhole].target in connectedSystems) {
-                connectedSystems.concat(systemDictionary[wormholeDictionary[wormhole].source]);
-                foundNewConnections = true;
-            }
-        };
-    } while (foundNewConnections);
-
-    return connectedSystems;
-}
-
-function getJumpsFromHome(system: number) {
-    let connectedSystems = [Number(process.env.HOME_SYSTEM)];
-    let jumpsFromHome = 0;
-
-    if (system in getConnectedSystems()) {
-        if (system === Number(process.env.HOMESYSTEM)) {
-            return 0;
-        }
-
-        let foundTarget = false;
-        while (!foundTarget) {
-            jumpsFromHome += 1;
-
-            for (const wormhole in wormholeDictionary) {
-                let wormholeObject = wormholeDictionary[wormhole];
-                if (wormholeObject.source in connectedSystems) {
-                    connectedSystems.concat(systemDictionary[wormholeObject.source]);
-                    if (wormholeObject.target === system) {
-                        foundTarget = true;
-                    }
-                }
-                if (wormholeObject.target in connectedSystems) {
-                    connectedSystems.concat(systemDictionary[wormholeObject.source]);
-                    if (wormholeObject.target === system) {
-                        foundTarget = true;
-                    }
-                }
-            };
-        }
-
-        return jumpsFromHome;
-    }
-    else {
-        return null;
-    }
-}
-
-function getSystemDatabaseIDFromSystemID(systemID: number): number {
-    (Object.keys(systemDictionary)).forEach(systemDatabaseID => {
-        if (systemDictionary[systemDatabaseID] === systemID) {
-            return systemDatabaseID;
-        }
-    });
-    return null;
-}
 
 function getAllianceName(allianceID: number): string {
     if (allianceID === undefined) {
@@ -186,15 +28,7 @@ function getAllianceName(allianceID: number): string {
 
 client.on('message', function (message) {
     //If the message contains embeds, have a look at them
-    if (message.embeds.length !== 0 && message.channel.id === process.env.UPDATES_CHANNEL) {
-        message.embeds.forEach(element => {
-            //Rudimentary check that the embed came from the Pathfinder API. Needs to be improved
-            if (element.footer.text === "Pathfinder API") {
-                parseUpdate(element);
-                writeLastParsedMessage(message.id);
-            }
-        });
-    }
+    pathfinder.parseMessage(message);
 
     if (message.content === 'b!help') {
         const exampleEmbed = {
@@ -298,51 +132,12 @@ client.on('message', function (message) {
 
 //Once ready, load any messages we missed while offline and parse them into memory
 client.on('ready', function () {
-    let lastParsedMessage = readLastParsedMessage();
-    if (lastParsedMessage !== undefined && lastParsedMessage !== '') {
-        let channel = <discord.TextChannel>client.channels.cache.get(process.env.UPDATES_CHANNEL);
-        channel.messages.fetch({ after: readLastParsedMessage() }).then(function (messages) {
-            messages.array().reverse().forEach(message => {
-                message.embeds.forEach(embed => {
-                    //Rudimentary check that the embed came from the Pathfinder API. Needs to be improved
-                    if (embed.footer.text === "Pathfinder API") {
-                        parseUpdate(embed);
-                    }
-                });
-                writeLastParsedMessage(message.id);
-            });
-        })
-    }
+    pathfinder.catchupOnUpdates(client)
 });
 
 //Now that we've set the application up, we load stored data, and connect to discord
 
-//Read and parse wormhole dictionary
-fs.readFile("data/wormholeDictionary.json", {encoding: 'utf-8', flag: 'w+'}, function (err, fileData) {
-    if (err) {
-        console.error(err);
-    }
-    try {
-        wormholeDictionary = JSON.parse(fileData);
-    }
-    catch (err) {
-        wormholeDictionary = {}
-    }
-})
 
-//Read and parse system dictionary
-fs.readFile("data/systemDictionary.json", {encoding: 'utf-8', flag: 'w+'}, function (err, fileData) {
-    if (err) {
-        console.error(err);
-    }
-    try {
-        systemDictionary = JSON.parse(fileData)
-    }
-    catch (err) {
-        wormholeDictionary = {}
-    }
-    systemDictionary[process.env.HOME_SYSTEM_DATABASE_ID] = process.env.HOME_SYSTEM;
-})
 
 client.login(process.env.CLIENT_SECRET_KEY);
 
@@ -356,7 +151,7 @@ zKill.addEventListener('open', function () {
 
 //When we get a kill from zKill, check whether the friendly alliance was involved and whether it 
 //Occured in the pathfinder chain. If yes to both, then alert
-zKill.addEventListener('message', async function a(event) {
+zKill.addEventListener('message', async function (event) {
     let killData = JSON.parse(event.data);
     //Check if the victim was part of the friendly alliance
     if (killData.victim.alliance_id !== process.env.FRIENDLY_ALLIANCE.toString()) {
@@ -370,14 +165,14 @@ zKill.addEventListener('message', async function a(event) {
 
         if (!containsFriendlyAttacker) {
             //The kill was not generated by Exit, check for connections to the home system
-            if (killData.solar_system_id in getConnectedSystems()) {
+            if (killData.solar_system_id in pathfinder.getConnectedSystems()) {
                 //We've found a kill that was not generated by exit, in the chain to the home system.
                 //Now we generate an alert
 
                 const alertEmbed = {
                     title: JSON.parse(await esijs.universe.typeInfo(killData.victim.ship_type_id)).name
                         + " killed in " + JSON.parse(await esijs.universe.systemInfo(killData.solar_system_id)).name
-                        + " - " + getJumpsFromHome(getSystemDatabaseIDFromSystemID(killData.solar_system_id))
+                        + " - " + pathfinder.getJumpsFromHome(pathfinder.getSystemDatabaseIDFromSystemID(killData.solar_system_id))
                         + "Jumps from Deep",
                     color: 0xff0000,
                     thumbnail: {
