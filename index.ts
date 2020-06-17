@@ -185,9 +185,8 @@ function getAllianceName(allianceID: number): string {
 }
 
 client.on('message', function (message) {
-
     //If the message contains embeds, have a look at them
-    if (message.embeds.length != 0) {
+    if (message.embeds.length !== 0 && message.channel.id === process.env.UPDATES_CHANNEL) {
         message.embeds.forEach(element => {
             //Rudimentary check that the embed came from the Pathfinder API. Needs to be improved
             if (element.footer.text === "Pathfinder API") {
@@ -196,9 +195,6 @@ client.on('message', function (message) {
             }
         });
     }
-
-
-
 
     if (message.content === 'b!help') {
         const exampleEmbed = {
