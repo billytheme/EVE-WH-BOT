@@ -3,14 +3,16 @@ import * as discord from "discord.js";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as esijs from "esijs"
-
-//We still need to record the messageID of the last parsed message for when we crash and resume
+import * as WebSocket from "ws"
 
 //Generic command to initialise the dotenv library
 dotenv.config();
 
 //Initialise the client
 let client: discord.Client = new discord.Client();
+
+//Initialise the Websocket for the zKill API
+let zKill = new WebSocket("wss://zkillboard.com:2096")
 
 //Create storage for the various databases
 let wormholeDictionary: Record<number, Record<'source' | 'target', number>> = {};
@@ -35,8 +37,13 @@ function writeLastParsedMessage(messageID: string) {
 }
 
 function readLastParsedMessage(): string {
-    let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', 'utf-8')
-    return lastParsedMessage;
+    try {
+        let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', 'utf-8')
+        return lastParsedMessage;
+    }
+    catch (err) {
+        return "";
+    }
 }
 
 function parseUpdate(embed: discord.MessageEmbed) {
@@ -62,11 +69,11 @@ function parseUpdate(embed: discord.MessageEmbed) {
                         switch (element.slice(0, element.lastIndexOf(':')).trim()) {
                             case "source":
                                 let source = element.slice(element.lastIndexOf('➜') + 1).trim();
-                                wormholeDictionary[wormholeDatabaseID]['source'] = Number(source);
+                                wormholeDictionary[wormholeDatabaseID].source = Number(source);
                                 break;
                             case "target":
                                 let target = element.slice(element.lastIndexOf('➜') + 1).trim();
-                                wormholeDictionary[wormholeDatabaseID]['target'] = Number(target);
+                                wormholeDictionary[wormholeDatabaseID].target = Number(target);
                                 break;
                         }
                     });
@@ -79,8 +86,8 @@ function parseUpdate(embed: discord.MessageEmbed) {
                     //database ID to eve ID mapping
                     const systemDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
                     const systemName = embed.title.slice(embed.title.indexOf("'") + 1, embed.title.lastIndexOf("'"))
-                    esijs.search.search(systemName, 'solar_system', true).then((solarSystemID: Array<number>) => {
-                        systemDictionary[systemDatabaseID] = solarSystemID['solar_system'][0];
+                    esijs.search.search(systemName, 'solar_system', true).then((solarSystemID) => {
+                        systemDictionary[systemDatabaseID] = solarSystemID.solar_system[0];
                         writeSystemDictionary();
                     });
                     break;
@@ -103,6 +110,81 @@ function parseUpdate(embed: discord.MessageEmbed) {
                     break;
             }
             break;
+    }
+}
+
+function getConnectedSystems(): Array<number> {
+    let connectedSystems = [Number(process.env.HOME_SYSTEM)];
+
+    let foundNewConnections: boolean;
+    do {
+        foundNewConnections = false;
+        for (const wormhole in wormholeDictionary) {
+            if (wormholeDictionary[wormhole].source in connectedSystems) {
+                connectedSystems.concat(systemDictionary[wormholeDictionary[wormhole].target]);
+                foundNewConnections = true;
+            }
+            if (wormholeDictionary[wormhole].target in connectedSystems) {
+                connectedSystems.concat(systemDictionary[wormholeDictionary[wormhole].source]);
+                foundNewConnections = true;
+            }
+        };
+    } while (foundNewConnections);
+
+    return connectedSystems;
+}
+
+function getJumpsFromHome(system: number) {
+    let connectedSystems = [Number(process.env.HOME_SYSTEM)];
+    let jumpsFromHome = 0;
+
+    if (system in getConnectedSystems()) {
+        if (system === Number(process.env.HOMESYSTEM)) {
+            return 0;
+        }
+
+        let foundTarget = false;
+        while (!foundTarget) {
+            jumpsFromHome += 1;
+
+            for (const wormhole in wormholeDictionary) {
+                let wormholeObject = wormholeDictionary[wormhole];
+                if (wormholeObject.source in connectedSystems) {
+                    connectedSystems.concat(systemDictionary[wormholeObject.source]);
+                    if (wormholeObject.target === system) {
+                        foundTarget = true;
+                    }
+                }
+                if (wormholeObject.target in connectedSystems) {
+                    connectedSystems.concat(systemDictionary[wormholeObject.source]);
+                    if (wormholeObject.target === system) {
+                        foundTarget = true;
+                    }
+                }
+            };
+        }
+
+        return jumpsFromHome;
+    }
+    else {
+        return null;
+    }
+}
+
+function getSystemDatabaseIDFromSystemID(systemID: number): number {
+    (Object.keys(systemDictionary)).forEach(systemDatabaseID => {
+        if (systemDictionary[systemDatabaseID] === systemID) {
+            return systemDatabaseID;
+        }
+    });
+    return null;
+}
+
+function getAllianceName(allianceID: number): string {
+    if (allianceID === undefined) {
+        return "None"
+    } else {
+        return JSON.parse(esijs.corporation.info(allianceID)).name
     }
 }
 
@@ -222,7 +304,7 @@ client.on('message', function (message) {
 
 });
 
-//Once ready, load any messages we missed and parse them into memory
+//Once ready, load any messages we missed while offline and parse them into memory
 client.on('ready', function () {
     let lastParsedMessage = readLastParsedMessage();
     if (lastParsedMessage !== undefined && lastParsedMessage !== '') {
@@ -267,6 +349,90 @@ fs.readFile("data/systemDictionary.json", 'utf-8', function (err, fileData) {
     catch (err) {
         wormholeDictionary = {}
     }
+    systemDictionary[process.env.HOME_SYSTEM_DATABASE_ID] = process.env.HOME_SYSTEM;
 })
 
 client.login(process.env.CLIENT_SECRET_KEY);
+
+//Subscribe to the killfeed to get kills as they happen
+zKill.addEventListener('open', function () {
+    zKill.send(JSON.stringify({
+        "action": "sub",
+        "channel": "killstream"
+    }));
+})
+
+//When we get a kill from zKill, check whether the friendly alliance was involved and whether it 
+//Occured in the pathfinder chain. If yes to both, then alert
+zKill.addEventListener('message', async function a(event) {
+    let killData = JSON.parse(event.data);
+    //Check if the victim was part of the friendly alliance
+    if (killData.victim.alliance_id !== process.env.FRIENDLY_ALLIANCE.toString()) {
+        //Check if any of the attackers where part of a friendly alliance
+        let containsFriendlyAttacker = false;
+        (killData.attackers).forEach(attacker => {
+            if (attacker.alliance_id === process.env.FRIENDLY_ALLIANCE.toString()) {
+                containsFriendlyAttacker = true;
+            }
+        });
+
+        if (!containsFriendlyAttacker) {
+            console.log(killData)
+            //The kill was not generated by Exit, check for connections to the home system
+            if (killData.solar_system_id in getConnectedSystems()) {
+                //We've found a kill that was not generated by exit, in the chain to the home system.
+                //Now we generate an alert
+
+                const alertEmbed = {
+                    title: JSON.parse(await esijs.universe.typeInfo(killData.victim.ship_type_id)).name
+                        + " killed in " + JSON.parse(await esijs.universe.systemInfo(killData.solar_system_id)).name
+                        + " - " + getJumpsFromHome(getSystemDatabaseIDFromSystemID(killData.solar_system_id))
+                        + "Jumps from Deep",
+                    color: 0xff0000,
+                    thumbnail: {
+                        url: 'https://images.evetech.net/types/' + killData.victim.ship_type_id + '/render?size=128',
+                    },
+                    "fields": [
+                        {
+                            name: 'Attacker (final blow)',
+                            value: JSON.parse(await esijs.character.publicInfo(killData.attackers[0].characterID)).name,
+                            inline: true
+                        },
+                        {
+                            name: 'Corporation',
+                            value: JSON.parse(esijs.corporation.info(killData.attackers[0].corporation_id)).name,
+                            inline: true
+                        },
+                        {
+                            name: 'Alliance',
+                            value: getAllianceName(killData.attackers[0].alliance_id),
+                            inline: true
+                        },
+                        {
+                            name: '\u200b',
+                            value: '\u200b',
+                            inline: false
+                        },
+                        {
+                            name: 'Victim',
+                            value: JSON.parse(await esijs.character.publicInfo(killData.victim.characterID)).name,
+                            inline: true
+                        },
+                        {
+                            name: 'Corporation',
+                            value: JSON.parse(esijs.corporation.info(killData.victim.corporation_id)).name,
+                            inline: true
+                        },
+                        {
+                            name: 'Alliance',
+                            value: getAllianceName(killData.victim.alliance_id),
+                            inline: true
+                        },
+                    ],
+                };
+                let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
+                channel.send({ embed: alertEmbed });
+            }
+        }
+    }
+});
