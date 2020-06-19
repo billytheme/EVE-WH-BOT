@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as esijs from "esijs"
-import { MessageEmbed, Message, Client, TextChannel } from "discord.js"
+import { MessageEmbed, Message, TextChannel } from "discord.js"
+import { client } from "../app"
 
 //Create storage for the various databases
 let wormholeDictionary: Record<number, Record<'source' | 'target', number>> = {};
@@ -41,7 +42,6 @@ export function parseMessage(message: Message) {
 }
 
 function parseUpdate(embed: MessageEmbed) {
-    console.log(embed);
     //Switch for the three types of message: Created, Updated, or Deleted
     //Both created and updated will give new info to store. JS allows us to treat them the same
     switch (embed.title.split(' ')[0]) {
@@ -115,12 +115,14 @@ export function getConnectedSystems(): Array<number> {
     do {
         foundNewConnections = false;
         for (const wormhole in wormholeDictionary) {
-            if (wormholeDictionary[wormhole].source in connectedSystems) {
-                connectedSystems.concat(systemDictionary[wormholeDictionary[wormhole].target]);
+            if (connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
+                !connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
+                connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].target]);
                 foundNewConnections = true;
             }
-            if (wormholeDictionary[wormhole].target in connectedSystems) {
-                connectedSystems.concat(systemDictionary[wormholeDictionary[wormhole].source]);
+            if (!connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
+                connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
+                connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].source]);
                 foundNewConnections = true;
             }
         };
@@ -133,7 +135,7 @@ export function getJumpsFromHome(system: number) {
     let connectedSystems = [Number(process.env.HOME_SYSTEM)];
     let jumpsFromHome = 0;
 
-    if (system in getConnectedSystems()) {
+    if (getConnectedSystems().includes(31001289)) {
         if (system === Number(process.env.HOMESYSTEM)) {
             return 0;
         }
@@ -143,16 +145,17 @@ export function getJumpsFromHome(system: number) {
             jumpsFromHome += 1;
 
             for (const wormhole in wormholeDictionary) {
-                let wormholeObject = wormholeDictionary[wormhole];
-                if (wormholeObject.source in connectedSystems) {
-                    connectedSystems.concat(systemDictionary[wormholeObject.source]);
-                    if (wormholeObject.target === system) {
+                if (connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
+                    !connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
+                    connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].target]);
+                    if(systemDictionary[wormholeDictionary[wormhole].target] === system){
                         foundTarget = true;
                     }
                 }
-                if (wormholeObject.target in connectedSystems) {
-                    connectedSystems.concat(systemDictionary[wormholeObject.source]);
-                    if (wormholeObject.target === system) {
+                if (!connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
+                    connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
+                    connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].source]);
+                    if(systemDictionary[wormholeDictionary[wormhole].source] === system){
                         foundTarget = true;
                     }
                 }
@@ -167,15 +170,15 @@ export function getJumpsFromHome(system: number) {
 }
 
 export function getSystemDatabaseIDFromSystemID(systemID: number): number {
-    (Object.keys(systemDictionary)).forEach(systemDatabaseID => {
-        if (systemDictionary[systemDatabaseID] === systemID) {
-            return systemDatabaseID;
+    for(const systemDatabaseID in systemDictionary) {
+        if (systemDictionary[Number(systemDatabaseID)] === systemID) {
+            return Number(systemDatabaseID);
         }
-    });
+    };
     return null;
 }
 
-export function catchupOnUpdates(client: Client) {
+export function catchupOnUpdates() {
     let lastParsedMessage = readLastParsedMessage();
     if (lastParsedMessage !== undefined && lastParsedMessage !== '') {
         let channel = <TextChannel>client.channels.cache.get(process.env.UPDATES_CHANNEL);

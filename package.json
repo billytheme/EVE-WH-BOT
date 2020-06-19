@@ -2,16 +2,27 @@
   "name": "eve-wh-bot",
   "version": "1.0.0",
   "description": "A utility bot designed for Unchained Alliance",
-  "main": "index.js",
+  "main": "src/app.js",
   "dependencies": {
     "@types/node": "^14.0.13",
+    "@types/ws": "^7.2.5",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
     "esijs": "^3.0.6"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
+    "@types/rewire": "^2.5.28",
+    "chai": "^4.2.0",
+    "mocha": "^8.0.1",
+    "rewire": "^5.0.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -r ts-node/register tests/*.test.ts",
+    "coverage": "nyc -r lcov -e .ts -x \"*.test.ts\" npm run test"
   },
   "repository": {
     "type": "git",
