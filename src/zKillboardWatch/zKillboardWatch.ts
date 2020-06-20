@@ -41,6 +41,7 @@ async function generateAlert(killData: any) {
             + " - " + pathfinder.getJumpsFromHome(killData.solar_system_id)
             + " Jumps from Deep",
         color: 0xff0000,
+        url: killData.zkb.url,
         thumbnail: {
             url: 'https://images.evetech.net/types/' + killData.victim.ship_type_id + '/render?size=128',
         },
