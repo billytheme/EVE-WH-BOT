@@ -18,7 +18,7 @@ describe('zKillboardWatcher', function () {
             expect(await zKillboardWatch.__get__('getCorporationName')(98380820)).to.be.equal('Exit-Strategy')
         })
         it('should return NPC', async () => {
-            expect(await zKillboardWatch.__get__('getCorporationName')(undefined)).to.be.equal('NPC')
+            expect(await zKillboardWatch.__get__('getCorporationName')(undefined)).to.be.equal('Unknown')
         })
     })
     describe('getCharacterName', function () {
@@ -38,6 +38,11 @@ describe('zKillboardWatcher', function () {
         })
         it('should return false when friendlies is not involved at all', function () {
             expect(zKillboardWatch.__get__('isFriendlyKill')(noFriendlies)).to.be.equal(false)
+        })
+    })
+    describe('isKillInChain', function () {
+        it('should return 0 when given a kill from deep', function () {
+            expect(zKillboardWatch.__get__('isKillInChain')(killFromDeep)).to.be.equal(true)
         })
     })
 })
@@ -60,6 +65,14 @@ describe('pathfinderParse', function () {
                 wormholeDictionary: { 12347: { source: 12345, target: 12346 } }
             })(function () {
                 expect(pathfinderParse.__get__('getJumpsFromHome')(31001289)).to.be.equal(1)
+            })
+        })
+        it('should return the correct number of jumps from home', function () {
+            pathfinderParse.__with__({
+                systemDictionary: { 12345: 31002458, 12346: 31001289, 12348: 31000258 },
+                wormholeDictionary: {}
+            })(function () {
+                expect(pathfinderParse.__get__('getJumpsFromHome')(31002458)).to.be.equal(0)
             })
         })
     })
@@ -729,7 +742,7 @@ let noFriendlies = {
     }
 }
 
-let testCase = {
+let killFromDeep = {
     "attackers": [
         {
             "damage_done": 883,
@@ -775,6 +788,6 @@ let testCase = {
     }
 }
 
-let a = {data: JSON.stringify(testCase)}
+let a = { data: JSON.stringify(killFromDeep) }
 
 zKillboardWatch.__get__('parseKill')(a)

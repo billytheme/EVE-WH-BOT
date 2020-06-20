@@ -135,8 +135,8 @@ export function getJumpsFromHome(system: number) {
     let connectedSystems = [Number(process.env.HOME_SYSTEM)];
     let jumpsFromHome = 0;
 
-    if (getConnectedSystems().includes(31001289)) {
-        if (system === Number(process.env.HOMESYSTEM)) {
+    if (getConnectedSystems().includes(system)) {
+        if (system === Number(process.env.HOME_SYSTEM)) {
             return 0;
         }
 
