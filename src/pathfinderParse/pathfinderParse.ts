@@ -136,30 +136,21 @@ export function getJumpsFromHome(system: number) {
     let jumpsFromHome = 0;
 
     if (getConnectedSystems().includes(system)) {
-        if (system === Number(process.env.HOME_SYSTEM)) {
-            return 0;
-        }
+        while (!connectedSystems.includes(system)) {
+            let foundThisIteration: Array<number> = []
+            jumpsFromHome += 1;
 
-        let foundTarget = false;
-        while (!foundTarget) {
             for (const wormhole in wormholeDictionary) {
                 if (connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
                     !connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
-                    connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].target]);
-                    if(systemDictionary[wormholeDictionary[wormhole].target] === system){
-                        foundTarget = true;
-                    }
-                    jumpsFromHome += 1;
+                    foundThisIteration.push(systemDictionary[wormholeDictionary[wormhole].target]);
                 }
                 if (!connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
                     connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
-                    connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].source]);
-                    if(systemDictionary[wormholeDictionary[wormhole].source] === system){
-                        foundTarget = true;
-                    }
-                    jumpsFromHome += 1;
+                    foundThisIteration.push(systemDictionary[wormholeDictionary[wormhole].source]);
                 }
             };
+            connectedSystems = connectedSystems.concat(foundThisIteration)
         }
 
         return jumpsFromHome;
@@ -170,7 +161,7 @@ export function getJumpsFromHome(system: number) {
 }
 
 export function getSystemDatabaseIDFromSystemID(systemID: number): number {
-    for(const systemDatabaseID in systemDictionary) {
+    for (const systemDatabaseID in systemDictionary) {
         if (systemDictionary[Number(systemDatabaseID)] === systemID) {
             return Number(systemDatabaseID);
         }
