@@ -75,6 +75,17 @@ describe('pathfinderParse', function () {
                 expect(pathfinderParse.__get__('getJumpsFromHome')(31002458)).to.be.equal(0)
             })
         })
+        it('should return the correct number of jumps from home', function () {
+            pathfinderParse.__with__({
+                systemDictionary: { 12345: 31002458, 12346: 31001289, 12348: 31000258 },
+                wormholeDictionary: {
+                    12347: { source: 12345, target: 12346 },
+                    12349: { source: 12348, target: 12346 }
+                }
+            })(function () {
+                expect(pathfinderParse.__get__('getJumpsFromHome')(31000258)).to.be.equal(2)
+            })
+        })
     })
     describe('getSystemDatabaseIDFromSystemID', function () {
         it('should return the correct number system ID', function () {
@@ -788,6 +799,6 @@ let killFromDeep = {
     }
 }
 
-let a = { data: JSON.stringify(killFromDeep) }
+// let a = { data: JSON.stringify(killFromDeep) }
 
-zKillboardWatch.__get__('parseKill')(a)
+// zKillboardWatch.__get__('parseKill')(a)

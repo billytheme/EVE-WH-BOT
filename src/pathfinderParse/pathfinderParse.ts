@@ -142,8 +142,6 @@ export function getJumpsFromHome(system: number) {
 
         let foundTarget = false;
         while (!foundTarget) {
-            jumpsFromHome += 1;
-
             for (const wormhole in wormholeDictionary) {
                 if (connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
                     !connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
@@ -151,6 +149,7 @@ export function getJumpsFromHome(system: number) {
                     if(systemDictionary[wormholeDictionary[wormhole].target] === system){
                         foundTarget = true;
                     }
+                    jumpsFromHome += 1;
                 }
                 if (!connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
                     connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
@@ -158,6 +157,7 @@ export function getJumpsFromHome(system: number) {
                     if(systemDictionary[wormholeDictionary[wormhole].source] === system){
                         foundTarget = true;
                     }
+                    jumpsFromHome += 1;
                 }
             };
         }
