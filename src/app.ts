@@ -38,7 +38,7 @@ client.on('message', function (message) {
     if (message.content === 'b!scanners') {
         const exampleEmbed = {
             "title": "Scanner Ranking for June",
-            "description": "1: Nosha Izia - 1000\n2: Sin Alarma - 900\n3: Primuss Elitest - 800\n4: Rand Haginen - 700\n5: Jin Jockey - 600\n6: Dackodai - 500\n7: k0rnWallace - 400\n8: Anne Navare - 300\n9: Athena Steel - 200\n10: Panther2707 - 100\nand so on...",
+            "description": "**THIS IS A PLACEHOLDER, NOT AN ACTUAL RANKING**\n1: Nosha Izia - 1000\n2: Sin Alarma - 900\n3: Primuss Elitest - 800\n4: Rand Haginen - 700\n5: Jin Jockey - 600\n6: Dackodai - 500\n7: k0rnWallace - 400\n8: Anne Navare - 300\n9: Athena Steel - 200\n10: Panther2707 - 100\nand so on...",
             "color": 0x1120f0,
         };
 
@@ -48,7 +48,7 @@ client.on('message', function (message) {
     if (message.content === 'b!killers') {
         const exampleEmbed = {
             "title": "PvP Pilot Ranking for June",
-            "description": "1: Nosha Izia - 1000\n2: Sin Alarma - 900\n3: Primuss Elitest - 800\n4: Rand Haginen - 700\n5: Jin Jockey - 600\n6: Dackodai - 500\n7: k0rnWallace - 400\n8: Anne Navare - 300\n9: Athena Steel - 200\n10: Panther2707 - 100\nand so on...",
+            "description": "**THIS IS A PLACEHOLDER, NOT AN ACTUAL RANKING**\n1: Nosha Izia - 1000\n2: Sin Alarma - 900\n3: Primuss Elitest - 800\n4: Rand Haginen - 700\n5: Jin Jockey - 600\n6: Dackodai - 500\n7: k0rnWallace - 400\n8: Anne Navare - 300\n9: Athena Steel - 200\n10: Panther2707 - 100\nand so on...",
             "color": 0xf27f13,
         };
 
@@ -58,7 +58,7 @@ client.on('message', function (message) {
     if (message.content === 'b!carriers') {
         const exampleEmbed = {
             "title": "Best Carrier Killing regions",
-            "description": "1: Delve\n2: Deklein\n3: Fade\n4: Feythabolis\n5: Querious\n6: Vale of the Silent\n7: Geminate\n8: Detorid\n9: Stain\n10: The Kalevala Expanse\nand so on...",
+            "description": "**THIS IS A PLACEHOLDER, NOT AN ACTUAL RANKING**\n1: Delve\n2: Deklein\n3: Fade\n4: Feythabolis\n5: Querious\n6: Vale of the Silent\n7: Geminate\n8: Detorid\n9: Stain\n10: The Kalevala Expanse\nand so on...",
             "color": 0x2aa317,
         };
 

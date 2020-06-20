@@ -5,9 +5,28 @@ let zKillboardWatch = rewire("../dist/src/zKillboardWatch/zKillboardWatch")
 let pathfinderParse = rewire("../dist/src/pathfinderParse/pathfinderParse")
 
 describe('zKillboardWatcher', function () {
-    describe('getAllianceInfo', function () {
+    describe('getAllianceName', function () {
         it('should return Unchained Aliiance', async () => {
-            expect((await zKillboardWatch.__get__('getAllianceInfo')(99009511)).name).to.be.equal('Unchained Alliance')
+            expect(await zKillboardWatch.__get__('getAllianceName')(99009511)).to.be.equal('Unchained Alliance')
+        })
+        it('should return Unchained Aliiance', async () => {
+            expect(await zKillboardWatch.__get__('getAllianceName')(undefined)).to.be.equal('None')
+        })
+    })
+    describe('getCorporationName', function () {
+        it('should return Exit-Strategy', async () => {
+            expect(await zKillboardWatch.__get__('getCorporationName')(98380820)).to.be.equal('Exit-Strategy')
+        })
+        it('should return NPC', async () => {
+            expect(await zKillboardWatch.__get__('getCorporationName')(undefined)).to.be.equal('Unknown')
+        })
+    })
+    describe('getCharacterName', function () {
+        it('should return Nosha Izia', async () => {
+            expect(await zKillboardWatch.__get__('getCharacterName')(2112693921)).to.be.equal('Nosha Izia')
+        })
+        it('should return NPC', async () => {
+            expect(await zKillboardWatch.__get__('getCharacterName')(undefined)).to.be.equal('NPC')
         })
     })
     describe('isExitKill', function () {
@@ -19,6 +38,11 @@ describe('zKillboardWatcher', function () {
         })
         it('should return false when friendlies is not involved at all', function () {
             expect(zKillboardWatch.__get__('isFriendlyKill')(noFriendlies)).to.be.equal(false)
+        })
+    })
+    describe('isKillInChain', function () {
+        it('should return 0 when given a kill from deep', function () {
+            expect(zKillboardWatch.__get__('isKillInChain')(killFromDeep)).to.be.equal(true)
         })
     })
 })
@@ -41,6 +65,14 @@ describe('pathfinderParse', function () {
                 wormholeDictionary: { 12347: { source: 12345, target: 12346 } }
             })(function () {
                 expect(pathfinderParse.__get__('getJumpsFromHome')(31001289)).to.be.equal(1)
+            })
+        })
+        it('should return the correct number of jumps from home', function () {
+            pathfinderParse.__with__({
+                systemDictionary: { 12345: 31002458, 12346: 31001289, 12348: 31000258 },
+                wormholeDictionary: {}
+            })(function () {
+                expect(pathfinderParse.__get__('getJumpsFromHome')(31002458)).to.be.equal(0)
             })
         })
     })
@@ -709,3 +741,53 @@ let noFriendlies = {
         "url": "https:\/\/zkillboard.com\/kill\/85056664\/"
     }
 }
+
+let killFromDeep = {
+    "attackers": [
+        {
+            "damage_done": 883,
+            "faction_id": 500021,
+            "final_blow": true,
+            "security_status": 0,
+            "ship_type_id": 30208
+        }
+    ],
+    "killmail_id": 85061635,
+    "killmail_time": "2020-06-19T06:33:57Z",
+    "solar_system_id": 31002458,
+    "victim": {
+        "character_id": 95534436,
+        "corporation_id": 98548597,
+        "damage_taken": 883,
+        "items": [
+            {
+                "flag": 27,
+                "item_type_id": 3638,
+                "quantity_destroyed": 1,
+                "singleton": 0
+            },
+            {
+                "flag": 19,
+                "item_type_id": 21857,
+                "quantity_dropped": 1,
+                "singleton": 0
+            },
+            {
+                "flag": 28,
+                "item_type_id": 3651,
+                "quantity_destroyed": 1,
+                "singleton": 0
+            }
+        ],
+        "position": {
+            "x": -125392721503.99855,
+            "y": 257725607835.59406,
+            "z": -208447684510.52673
+        },
+        "ship_type_id": 606
+    }
+}
+
+let a = { data: JSON.stringify(killFromDeep) }
+
+zKillboardWatch.__get__('parseKill')(a)

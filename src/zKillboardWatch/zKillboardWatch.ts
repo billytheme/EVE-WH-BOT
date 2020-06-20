@@ -20,7 +20,7 @@ function isFriendlyKill(killData): boolean {
 }
 
 function isKillInChain(killData): boolean {
-    if (killData.solar_system_id in pathfinder.getConnectedSystems()) {
+    if (pathfinder.getConnectedSystems().includes(killData.solar_system_id)) {
         return true;
     }
     return false;
@@ -47,17 +47,17 @@ async function generateAlert(killData: any) {
         "fields": [
             {
                 name: 'Attacker (final blow)',
-                value: (await esijs.character.info(Number(killData.attackers[0].character_id))).name,
+                value: await getCharacterName(killData.attackers[0].character_id),
                 inline: true
             },
             {
                 name: 'Corporation',
-                value: (await esijs.corporation.info(Number(killData.attackers[0].corporation_id))).name,
+                value: await getCorporationName(killData.attackers[0].corporation_id),
                 inline: true
             },
             {
                 name: 'Alliance',
-                value: (await getAllianceInfo(killData.attackers[0].alliance_id)).name,
+                value: await getAllianceName(killData.attackers[0].alliance_id),
                 inline: true
             },
             {
@@ -67,17 +67,17 @@ async function generateAlert(killData: any) {
             },
             {
                 name: 'Victim',
-                value: (await esijs.character.info(Number(killData.victim.character_id))).name,
+                value: await getCharacterName(killData.victim.character_id),
                 inline: true
             },
             {
                 name: 'Corporation',
-                value: (await esijs.corporation.info(Number(killData.victim.corporation_id))).name,
+                value: await getCorporationName(killData.victim.corporation_id),
                 inline: true
             },
             {
                 name: 'Alliance',
-                value: (await getAllianceInfo(killData.victim.alliance_id)).name,
+                value: await getAllianceName(killData.victim.alliance_id),
                 inline: true
             },
         ],
@@ -86,10 +86,38 @@ async function generateAlert(killData: any) {
     channel.send({ embed: alertEmbed });
 }
 
-async function getAllianceInfo(allianceID: number): Promise<any> {
+async function getAllianceName(allianceID: number): Promise<any> {
     if (allianceID === undefined) {
-        return "None"
+        return new Promise((resolve, reject) => {
+            resolve('None')
+        })
     } else {
-        return esijs.alliance.info(allianceID)
+        return new Promise(async (resolve, reject) => {
+            resolve((await esijs.alliance.info(allianceID)).name)
+        })
+    }
+}
+
+async function getCorporationName(corporationID: number): Promise<any> {
+    if (corporationID === undefined) {
+        return new Promise((resolve, reject) => {
+            resolve('Unknown')
+        })
+    } else {
+        return new Promise(async (resolve, reject) => {
+            resolve((await esijs.corporation.info(corporationID)).name)
+        })
+    }
+}
+
+async function getCharacterName(characterID: number): Promise<any> {
+    if (characterID === undefined) {
+        return new Promise((resolve, reject) => {
+            resolve('NPC')
+        })
+    } else {
+        return new Promise(async (resolve, reject) => {
+            resolve((await esijs.character.info(characterID)).name)
+        })
     }
 }
