@@ -8,10 +8,8 @@ dotenv.config();
 //Initialise the client
 export let client: discord.Client = new discord.Client();
 
-import "./zKillboardWatch/events"
-import "./pathfinderParse/events"
+import "./events"
 
-let scannerDictionary: Record<number, number> = {};
 let killerDictionary: Record<number, number> = {};
 
 client.on('message', function (message) {
@@ -30,16 +28,6 @@ client.on('message', function (message) {
                     `carriers`\n\
                     performs a lookup for the best potential regions to kill carriers in",
                 "color": 0x00e0bf,
-            };
-
-            message.channel.send({ embed: exampleEmbed });
-        }
-
-        if (message.content === 'b!scanners') {
-            const exampleEmbed = {
-                "title": "Scanner Ranking for June",
-                "description": "**THIS IS A PLACEHOLDER, NOT AN ACTUAL RANKING**\n1: Nosha Izia - 1000\n2: Sin Alarma - 900\n3: Primuss Elitest - 800\n4: Rand Haginen - 700\n5: Jin Jockey - 600\n6: Dackodai - 500\n7: k0rnWallace - 400\n8: Anne Navare - 300\n9: Athena Steel - 200\n10: Panther2707 - 100\nand so on...",
-                "color": 0x1120f0,
             };
 
             message.channel.send({ embed: exampleEmbed });

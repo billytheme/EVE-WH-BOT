@@ -21,7 +21,7 @@ function writeLastParsedMessage(messageID: string) {
 
 function readLastParsedMessage(): string {
     try {
-        let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', { encoding: 'utf-8', flag: 'w+' });
+        let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', { encoding: 'utf-8', flag: 'r' });
         return lastParsedMessage;
     }
     catch (err) {
@@ -60,7 +60,6 @@ function parseUpdate(embed: MessageEmbed) {
                     //Loop through the information provided and store it
                     //we only care about the source and target here
                     embed.description.replace(/`/g, '').split(',').forEach(element => {
-                        let debug = element.slice(0, element.lastIndexOf(':')).trim()
                         switch (element.slice(0, element.lastIndexOf(':')).trim()) {
                             case "source":
                                 let source = element.slice(element.lastIndexOf('➜') + 1).trim();
@@ -182,7 +181,7 @@ export function catchupOnUpdates() {
 }
 
 //Read and parse wormhole dictionary
-fs.readFile("data/wormholeDictionary.json", { encoding: 'utf-8', flag: 'w+' }, function (err, fileData) {
+fs.readFile("data/wormholeDictionary.json", { encoding: 'utf-8', flag: 'r+' }, function (err, fileData) {
     if (err) {
         console.error(err);
     }
@@ -195,7 +194,7 @@ fs.readFile("data/wormholeDictionary.json", { encoding: 'utf-8', flag: 'w+' }, f
 })
 
 //Read and parse system dictionary
-fs.readFile("data/systemDictionary.json", { encoding: 'utf-8', flag: 'w+' }, function (err, fileData) {
+fs.readFile("data/systemDictionary.json", { encoding: 'utf-8', flag: 'r+' }, function (err, fileData) {
     if (err) {
         console.error(err);
     }
