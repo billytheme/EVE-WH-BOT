@@ -60,7 +60,6 @@ function parseUpdate(embed: MessageEmbed) {
                     //Loop through the information provided and store it
                     //we only care about the source and target here
                     embed.description.replace(/`/g, '').split(',').forEach(element => {
-                        let debug = element.slice(0, element.lastIndexOf(':')).trim()
                         switch (element.slice(0, element.lastIndexOf(':')).trim()) {
                             case "source":
                                 let source = element.slice(element.lastIndexOf('➜') + 1).trim();

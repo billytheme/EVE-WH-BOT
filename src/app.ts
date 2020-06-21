@@ -8,10 +8,8 @@ dotenv.config();
 //Initialise the client
 export let client: discord.Client = new discord.Client();
 
-import "./zKillboardWatch/events"
-import "./pathfinderParse/events"
+import "./events"
 
-let scannerDictionary: Record<number, number> = {};
 let killerDictionary: Record<number, number> = {};
 
 client.on('message', function (message) {

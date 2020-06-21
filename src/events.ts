@@ -1,5 +1,8 @@
+import * as pathfinder from "./pathfinderParse/pathfinderParse"
+import { client } from "./app"
 import * as webSocket from "ws"
-import * as zKillboardWatch from "./zKillboardWatch"
+import * as zKillboardWatch from "./zKillboardWatch/zKillboardWatch"
+import * as scannerRanking from "./scannerRanking/scannerRanking"
 
 //Initialise the Websocket for the zKill API
 let zKill = new webSocket("wss://zkillboard.com:2096")
@@ -16,3 +19,10 @@ zKill.addEventListener('open', function () {
 //Occured in the pathfinder chain. If yes to both, then alert
 zKill.addEventListener('message', zKillboardWatch.parseKill);
 
+//When we receive a message, pass it to the parse function
+client.on('message', pathfinder.parseMessage)
+
+//Once we load, load any messages we missed while offline and parse them into memory
+client.on('ready', pathfinder.catchupOnUpdates);
+
+client.on('message', scannerRanking.parseMessage)
