@@ -33,16 +33,6 @@ client.on('message', function (message) {
             message.channel.send({ embed: exampleEmbed });
         }
 
-        if (message.content === 'b!scanners') {
-            const exampleEmbed = {
-                "title": "Scanner Ranking for June",
-                "description": "**THIS IS A PLACEHOLDER, NOT AN ACTUAL RANKING**\n1: Nosha Izia - 1000\n2: Sin Alarma - 900\n3: Primuss Elitest - 800\n4: Rand Haginen - 700\n5: Jin Jockey - 600\n6: Dackodai - 500\n7: k0rnWallace - 400\n8: Anne Navare - 300\n9: Athena Steel - 200\n10: Panther2707 - 100\nand so on...",
-                "color": 0x1120f0,
-            };
-
-            message.channel.send({ embed: exampleEmbed });
-        }
-
         if (message.content === 'b!killers') {
             const exampleEmbed = {
                 "title": "PvP Pilot Ranking for June",

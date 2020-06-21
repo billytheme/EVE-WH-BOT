@@ -21,7 +21,7 @@ function writeLastParsedMessage(messageID: string) {
 
 function readLastParsedMessage(): string {
     try {
-        let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', { encoding: 'utf-8', flag: 'w+' });
+        let lastParsedMessage: string = fs.readFileSync('data/lastParsedMessage.txt', { encoding: 'utf-8', flag: 'r' });
         return lastParsedMessage;
     }
     catch (err) {
@@ -181,7 +181,7 @@ export function catchupOnUpdates() {
 }
 
 //Read and parse wormhole dictionary
-fs.readFile("data/wormholeDictionary.json", { encoding: 'utf-8', flag: 'w+' }, function (err, fileData) {
+fs.readFile("data/wormholeDictionary.json", { encoding: 'utf-8', flag: 'r+' }, function (err, fileData) {
     if (err) {
         console.error(err);
     }
@@ -194,7 +194,7 @@ fs.readFile("data/wormholeDictionary.json", { encoding: 'utf-8', flag: 'w+' }, f
 })
 
 //Read and parse system dictionary
-fs.readFile("data/systemDictionary.json", { encoding: 'utf-8', flag: 'w+' }, function (err, fileData) {
+fs.readFile("data/systemDictionary.json", { encoding: 'utf-8', flag: 'r+' }, function (err, fileData) {
     if (err) {
         console.error(err);
     }

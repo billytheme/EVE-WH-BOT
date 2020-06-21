@@ -3,6 +3,8 @@ import { client } from "./app"
 import * as webSocket from "ws"
 import * as zKillboardWatch from "./zKillboardWatch/zKillboardWatch"
 import * as scannerRanking from "./scannerRanking/scannerRanking"
+import * as discord from "discord.js"
+import * as schedule from "node-schedule"
 
 //Initialise the Websocket for the zKill API
 let zKill = new webSocket("wss://zkillboard.com:2096")
@@ -26,3 +28,16 @@ client.on('message', pathfinder.parseMessage)
 client.on('ready', pathfinder.catchupOnUpdates);
 
 client.on('message', scannerRanking.parseMessage)
+
+client.on('message', function (message: discord.Message) {
+    let lowerMessage = message.content.toLowerCase();
+
+    if (lowerMessage.slice(0, 2) == 'b!') {
+        switch (lowerMessage.slice(2)) {
+            case 'scanners':
+                scannerRanking.generateRanking();
+        }
+    }
+})
+
+schedule.scheduleJob('* * 1 * *', scannerRanking.resetRankings)
