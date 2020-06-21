@@ -92,13 +92,13 @@ function parseUpdate(embed: MessageEmbed) {
             switch (embed.title.split(' ')[1]) {
                 case "connection":
                     //Parse the wormhole ID and delete it from memory
-                    const wormholeDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
+                    const wormholeDatabaseID = Number(embed.title.slice(embed.title.indexOf('#') + 1).trim());
                     delete wormholeDictionary[wormholeDatabaseID];
                     writeWormholeDictionary();
                     break;
                 case "system":
                     //Parse the system Database ID and delete it from memory
-                    const systemDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
+                    const systemDatabaseID = Number(embed.title.slice(embed.title.indexOf('#') + 1).trim());
                     delete systemDictionary[systemDatabaseID];
                     writeSystemDictionary();
                     break;

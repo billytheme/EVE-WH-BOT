@@ -798,7 +798,3 @@ let killFromDeep = {
         "ship_type_id": 606
     }
 }
-
-// let a = { data: JSON.stringify(killFromDeep) }
-
-// zKillboardWatch.__get__('parseKill')(a)
