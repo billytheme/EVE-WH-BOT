@@ -99,7 +99,7 @@ function parseUpdate(embed: MessageEmbed) {
                 case "system":
                     //Parse the system Database ID and delete it from memory
                     const systemDatabaseID = Number(embed.title.slice(embed.title.indexOf('#') + 1).trim());
-                    delete systemDictionary[systemDatabaseID];
+                    delete systemDictionary[systemDatabaseID.toString()];
                     writeSystemDictionary();
                     break;
             }
