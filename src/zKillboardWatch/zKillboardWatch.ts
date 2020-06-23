@@ -2,6 +2,7 @@ import { client } from "../app"
 import * as esijs from "esijs"
 import * as discord from "discord.js"
 import * as pathfinder from "../pathfinderParse/pathfinderParse"
+import { getAllianceName, getCharacterName, getCorporationName } from "../utils/utils"
 
 function isFriendlyKill(killData): boolean {
     let containsFriendlyAttacker = false;
@@ -85,40 +86,4 @@ async function generateAlert(killData: any) {
     };
     let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
     channel.send({ embed: alertEmbed });
-}
-
-async function getAllianceName(allianceID: number): Promise<any> {
-    if (allianceID === undefined) {
-        return new Promise((resolve, reject) => {
-            resolve('None')
-        })
-    } else {
-        return new Promise(async (resolve, reject) => {
-            resolve((await esijs.alliance.info(allianceID)).name)
-        })
-    }
-}
-
-async function getCorporationName(corporationID: number): Promise<any> {
-    if (corporationID === undefined) {
-        return new Promise((resolve, reject) => {
-            resolve('Unknown')
-        })
-    } else {
-        return new Promise(async (resolve, reject) => {
-            resolve((await esijs.corporation.info(corporationID)).name)
-        })
-    }
-}
-
-async function getCharacterName(characterID: number): Promise<any> {
-    if (characterID === undefined) {
-        return new Promise((resolve, reject) => {
-            resolve('NPC')
-        })
-    } else {
-        return new Promise(async (resolve, reject) => {
-            resolve((await esijs.character.info(characterID)).name)
-        })
-    }
 }

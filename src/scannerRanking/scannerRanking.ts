@@ -2,6 +2,7 @@ import { Message, MessageEmbed, TextChannel } from "discord.js"
 import * as fs from "fs"
 import * as esijs from "esijs"
 import { client } from "../app"
+import { getCharacterName } from "../utils/utils"
 
 //1 point for scanning a signature to group
 //1 point for scanning a wormhole and jumping it (in addition)
@@ -116,15 +117,3 @@ fs.readFile("data/scannerDictionary.json", { encoding: 'utf-8', flag: 'r+' }, fu
         scannerDictionary = {}
     }
 })
-
-async function getCharacterName(characterID: number): Promise<any> {
-    if (characterID === undefined) {
-        return new Promise((resolve, reject) => {
-            resolve('NPC')
-        })
-    } else {
-        return new Promise(async (resolve, reject) => {
-            resolve((await esijs.character.info(characterID)).name)
-        })
-    }
-}
