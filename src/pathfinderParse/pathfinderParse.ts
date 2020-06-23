@@ -41,7 +41,7 @@ export function parseMessage(message: Message) {
     }
 }
 
-function parseUpdate(embed: MessageEmbed) {
+async function parseUpdate(embed: MessageEmbed) {
     //Switch for the three types of message: Created, Updated, or Deleted
     //Both created and updated will give new info to store. JS allows us to treat them the same
     switch (embed.title.split(' ')[0]) {
@@ -80,10 +80,9 @@ function parseUpdate(embed: MessageEmbed) {
                     //database ID to eve ID mapping
                     const systemDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
                     const systemName = embed.title.slice(embed.title.indexOf("'") + 1, embed.title.lastIndexOf("'"))
-                    esijs.search.search(systemName, 'solar_system', true).then((solarSystemID) => {
-                        systemDictionary[systemDatabaseID] = solarSystemID.solar_system[0];
-                        writeSystemDictionary();
-                    });
+                    let solarSystemID = await esijs.search.search(systemName, 'solar_system', true)
+                    systemDictionary[systemDatabaseID] = solarSystemID.solar_system[0];
+                    writeSystemDictionary();
                     break;
             }
             break;
