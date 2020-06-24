@@ -23,8 +23,7 @@
     "typescript": "^3.9.5"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register tests/*.test.ts",
-    "coverage": "nyc -r lcov -e .ts -x \"*.test.ts\" npm run test"
+    "test": "mocha -r ts-node/register ./test/*.test.ts"
   },
   "repository": {
     "type": "git",

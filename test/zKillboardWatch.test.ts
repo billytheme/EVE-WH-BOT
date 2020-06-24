@@ -1,34 +1,10 @@
 import { expect } from "chai"
 import rewire = require("rewire")
+import * as utils from "../src/utils/utils"
 
-let zKillboardWatch = rewire("../dist/src/zKillboardWatch/zKillboardWatch")
-let pathfinderParse = rewire("../dist/src/pathfinderParse/pathfinderParse")
+let zKillboardWatch = rewire("../src/zKillboardWatch/zKillboardWatch")
 
 describe('zKillboardWatcher', function () {
-    describe('getAllianceName', function () {
-        it('should return Unchained Aliiance', async () => {
-            expect(await zKillboardWatch.__get__('getAllianceName')(99009511)).to.be.equal('Unchained Alliance')
-        })
-        it('should return Unchained Aliiance', async () => {
-            expect(await zKillboardWatch.__get__('getAllianceName')(undefined)).to.be.equal('None')
-        })
-    })
-    describe('getCorporationName', function () {
-        it('should return Exit-Strategy', async () => {
-            expect(await zKillboardWatch.__get__('getCorporationName')(98380820)).to.be.equal('Exit-Strategy')
-        })
-        it('should return NPC', async () => {
-            expect(await zKillboardWatch.__get__('getCorporationName')(undefined)).to.be.equal('Unknown')
-        })
-    })
-    describe('getCharacterName', function () {
-        it('should return Nosha Izia', async () => {
-            expect(await zKillboardWatch.__get__('getCharacterName')(2112693921)).to.be.equal('Nosha Izia')
-        })
-        it('should return NPC', async () => {
-            expect(await zKillboardWatch.__get__('getCharacterName')(undefined)).to.be.equal('NPC')
-        })
-    })
     describe('isExitKill', function () {
         it('should return true when a friendly is the victim', function () {
             expect(zKillboardWatch.__get__('isFriendlyKill')(friendlyVictim)).to.be.equal(true)
@@ -43,58 +19,6 @@ describe('zKillboardWatcher', function () {
     describe('isKillInChain', function () {
         it('should return 0 when given a kill from deep', function () {
             expect(zKillboardWatch.__get__('isKillInChain')(killFromDeep)).to.be.equal(true)
-        })
-    })
-})
-
-describe('pathfinderParse', function () {
-    describe('getConnectedSystems', function () {
-        it('should return the correct connected systems', function () {
-            pathfinderParse.__with__({
-                systemDictionary: { 12345: 31002458, 12346: 31001289, 12348: 31000258 },
-                wormholeDictionary: { 12347: { source: 12345, target: 12346 } }
-            })(function () {
-                expect(pathfinderParse.__get__('getConnectedSystems')()).to.be.eql([31002458, 31001289])
-            })
-        })
-    })
-    describe('getJumpsFromHome', function () {
-        it('should return the correct number of jumps from home', function () {
-            pathfinderParse.__with__({
-                systemDictionary: { 12345: 31002458, 12346: 31001289, 12348: 31000258 },
-                wormholeDictionary: { 12347: { source: 12345, target: 12346 } }
-            })(function () {
-                expect(pathfinderParse.__get__('getJumpsFromHome')(31001289)).to.be.equal(1)
-            })
-        })
-        it('should return the correct number of jumps from home', function () {
-            pathfinderParse.__with__({
-                systemDictionary: { 12345: 31002458, 12346: 31001289, 12348: 31000258 },
-                wormholeDictionary: {}
-            })(function () {
-                expect(pathfinderParse.__get__('getJumpsFromHome')(31002458)).to.be.equal(0)
-            })
-        })
-        it('should return the correct number of jumps from home', function () {
-            pathfinderParse.__with__({
-                systemDictionary: { 12345: 31002458, 12346: 31001289, 12348: 31000258 },
-                wormholeDictionary: {
-                    12347: { source: 12345, target: 12346 },
-                    12349: { source: 12348, target: 12346 }
-                }
-            })(function () {
-                expect(pathfinderParse.__get__('getJumpsFromHome')(31000258)).to.be.equal(2)
-            })
-        })
-    })
-    describe('getSystemDatabaseIDFromSystemID', function () {
-        it('should return the correct number system ID', function () {
-            pathfinderParse.__with__({
-                systemDictionary: { 12345: 31002458, 12346: 31001289, 12348: 31000258 },
-                wormholeDictionary: { 12347: { source: 12345, target: 12346 } }
-            })(function () {
-                expect(pathfinderParse.__get__('getSystemDatabaseIDFromSystemID')(31001289)).to.be.equal(12346);
-            })
         })
     })
 })
