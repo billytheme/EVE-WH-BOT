@@ -23,7 +23,7 @@
     "typescript": "^3.9.5"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register ./test/main.test.ts"
+    "test": "mocha -r ts-node/register ./test/*.test.ts"
   },
   "repository": {
     "type": "git",

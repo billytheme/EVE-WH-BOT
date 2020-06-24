@@ -1,4 +1,4 @@
-import * as esijs from "esijs"
+import { alliance, corporation, character } from "esijs"
 
 export async function getAllianceName(allianceID: number): Promise<any> {
     if (allianceID === undefined) {
@@ -7,7 +7,7 @@ export async function getAllianceName(allianceID: number): Promise<any> {
         })
     } else {
         return new Promise(async (resolve, reject) => {
-            resolve((await esijs.alliance.info(allianceID)).name)
+            resolve((await alliance.info(allianceID)).name)
         })
     }
 }
@@ -19,7 +19,7 @@ export async function getCorporationName(corporationID: number): Promise<any> {
         })
     } else {
         return new Promise(async (resolve, reject) => {
-            resolve((await esijs.corporation.info(corporationID)).name)
+            resolve((await corporation.info(corporationID)).name)
         })
     }
 }
@@ -31,7 +31,7 @@ export async function getCharacterName(characterID: number): Promise<any> {
         })
     } else {
         return new Promise(async (resolve, reject) => {
-            resolve((await esijs.character.info(characterID)).name)
+            resolve((await character.info(characterID)).name)
         })
     }
 }
