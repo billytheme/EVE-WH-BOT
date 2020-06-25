@@ -9,29 +9,12 @@ dotenv.config();
 export let client: discord.Client = new discord.Client();
 
 import "./events"
+import "./commands"
 
 let killerDictionary: Record<number, number> = {};
 
 client.on('message', function (message) {
     if (message.channel.id === process.env.BOT_CHANNEL) {
-        if (message.content === 'b!help') {
-            const exampleEmbed = {
-                "title": "Command list",
-                "description": "Current Prefix: `b!`\n\n\
-                    `help`\n\
-                    Returns this list.\n\
-                    If another command is used as an argument, gives specific help for the command\n\n\
-                    `scanners`\n\
-                    Returns the leaderboard for best scanners this month\n\n\
-                    `killers`\n\
-                    Returns the leaderboard for the best PvP pilots this month\n\n\
-                    `carriers`\n\
-                    performs a lookup for the best potential regions to kill carriers in",
-                "color": 0x00e0bf,
-            };
-
-            message.channel.send({ embed: exampleEmbed });
-        }
 
         if (message.content === 'b!killers') {
             const exampleEmbed = {
