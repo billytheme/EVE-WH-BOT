@@ -23,6 +23,9 @@ client.on('message', async function (message: discord.Message) {
 
             // DEBUG
             case 'connected':
+                let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
+                channel.send({ embed: {description: "loading"} });
+
                 let descriptionString = ''
 
                 let systems = pathfinderParse.getConnectedSystems()
@@ -38,7 +41,6 @@ client.on('message', async function (message: discord.Message) {
                 let connectedEmbed = {
                     description: descriptionString
                 }
-                let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
                 channel.send({ embed: connectedEmbed });
         }
     }
