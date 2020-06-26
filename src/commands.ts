@@ -1,9 +1,13 @@
 import * as discord from "discord.js"
-import {client} from "./app"
+import { client } from "./app"
 import * as scannerRanking from "./scannerRanking/scannerRanking"
 import * as help from "./help/help"
 
-client.on('message', function (message: discord.Message) {
+// DEBUG
+import * as pathfinderParse from "./pathfinderParse/pathfinderParse"
+import * as esijs from "esijs"
+
+client.on('message', async function (message: discord.Message) {
     let lowerMessage = message.content.toLowerCase();
 
     // If the message contains the command prefix and came from the correct channel, process it
@@ -16,6 +20,26 @@ client.on('message', function (message: discord.Message) {
             case 'scanners':
                 scannerRanking.generateRanking();
                 break;
+
+            // DEBUG
+            case 'connected':
+                let descriptionString = ''
+
+                let systems = pathfinderParse.getConnectedSystems()
+                for (const system in systems) {
+                    if (systems[system] !== undefined) {
+                        descriptionString += (await esijs.universe.systems.systemInfo(systems[system])).name + ', '
+                    }
+                    else {
+                        descriptionString += 'undefined' + ', '
+                    }
+                }
+
+                let connectedEmbed = {
+                    description: descriptionString
+                }
+                let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
+                channel.send({ embed: connectedEmbed });
         }
     }
 })
