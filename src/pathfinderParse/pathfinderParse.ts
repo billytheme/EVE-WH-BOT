@@ -6,7 +6,7 @@ import { client } from "../app"
 // Create storage for the various databases.
 // wormholeDictionary stores connections between wormholes
 // systemDictionary maps internal pathfinder ID to the EvE system ID
-let wormholeDictionary: Record<number, Record<'source' | 'target', number>> = {};
+let wormholeDictionary: Record<number, { wormhole: Record<'source' | 'target', number>, created: number }> = {};
 let systemDictionary: Record<number, number> = {};
 
 function writeWormholeDictionary() {
@@ -58,6 +58,17 @@ async function parseUpdate(embed: MessageEmbed) {
     // Both created and updated will give new info to store. JS allows us to treat them the same
     switch (embed.title.split(' ')[0]) {
         case "Created":
+            switch (embed.title.split(' ')[1]) {
+                case "connection":
+                    const wormholeDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
+                    if (wormholeDictionary[wormholeDatabaseID] === undefined) {
+                        wormholeDictionary[wormholeDatabaseID] = {wormhole: undefined, created: undefined}
+                        wormholeDictionary[wormholeDatabaseID].wormhole = { 'source': undefined, 'target': undefined }
+                    }
+
+                    wormholeDictionary[wormholeDatabaseID].created = Date.now();
+                    break;
+            }
         case "Updated":
             // Switch for either:
             //   connection: Create a new ID (for identification when deleting), and source and target system
@@ -67,7 +78,8 @@ async function parseUpdate(embed: MessageEmbed) {
                     const wormholeDatabaseID = Number(embed.title.split(' ')[3].replace('#', ''));
                     //Initialise the record if not already existing
                     if (wormholeDictionary[wormholeDatabaseID] === undefined) {
-                        wormholeDictionary[wormholeDatabaseID] = { 'source': undefined, 'target': undefined }
+                        wormholeDictionary[wormholeDatabaseID] = {wormhole: undefined, created: undefined}
+                        wormholeDictionary[wormholeDatabaseID].wormhole = { 'source': undefined, 'target': undefined }
                     }
                     //Loop through the information provided and store it
                     //we only care about the source and target here
@@ -75,11 +87,11 @@ async function parseUpdate(embed: MessageEmbed) {
                         switch (element.slice(0, element.lastIndexOf(':')).trim()) {
                             case "source":
                                 let source = element.slice(element.lastIndexOf('➜') + 1).trim();
-                                wormholeDictionary[wormholeDatabaseID].source = Number(source);
+                                wormholeDictionary[wormholeDatabaseID].wormhole.source = Number(source);
                                 break;
                             case "target":
                                 let target = element.slice(element.lastIndexOf('➜') + 1).trim();
-                                wormholeDictionary[wormholeDatabaseID].target = Number(target);
+                                wormholeDictionary[wormholeDatabaseID].wormhole.target = Number(target);
                                 break;
                         }
                     });
@@ -118,7 +130,19 @@ async function parseUpdate(embed: MessageEmbed) {
     }
 }
 
+function checkWormholeTimeout() {
+    for (const wormholeDatabaseID in wormholeDictionary){
+        let timeSinceCreated = Date.now() - wormholeDictionary[wormholeDatabaseID].created;
+        if (timeSinceCreated > 129600000){
+            delete wormholeDictionary[wormholeDatabaseID];
+        }
+    }
+}
+
 export function getConnectedSystems(): Array<number> {
+    // The Pathfinder API is sometimes unreliable and will not push certain deletion events,
+    // so we check them all manually for timeout before processing
+    checkWormholeTimeout()
     // Returns an array of the EvE system IDs of all systems connected to the home system
     let connectedSystems = [Number(process.env.HOME_SYSTEM)];
 
@@ -133,14 +157,14 @@ export function getConnectedSystems(): Array<number> {
             // Check if one of the end points of the connection is in our graph, 
             // then add the other one. If neither is in the graph, then its not connected. 
             // If both are, then we already have both systems and don't need to add them
-            if (connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
-                !connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
-                connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].target]);
+            if (connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].wormhole.source]) &&
+                !connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].wormhole.target])) {
+                connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].wormhole.target]);
                 foundNewConnections = true;
             }
-            if (!connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
-                connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
-                connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].source]);
+            if (!connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].wormhole.source]) &&
+                connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].wormhole.target])) {
+                connectedSystems.push(systemDictionary[wormholeDictionary[wormhole].wormhole.source]);
                 foundNewConnections = true;
             }
         };
@@ -150,6 +174,9 @@ export function getConnectedSystems(): Array<number> {
 }
 
 export function getJumpsFromHome(system: number) {
+    // The Pathfinder API is sometimes unreliable and will not push certain deletion events,
+    // so we check them all manually for timeout before processing
+    checkWormholeTimeout()
     // A modified getConnectedSystems which find the distance of the specified system from
     // the home system. Takes an EVE system ID
     let connectedSystems = [Number(process.env.HOME_SYSTEM)];
@@ -169,13 +196,13 @@ export function getJumpsFromHome(system: number) {
                 // Check if one of the end points of the connection is in our graph, 
                 // then add the other one. If neither is in the graph, then its not connected. 
                 // If both are, then we already have both systems and don't need to add them
-                if (connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
-                    !connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
-                    foundThisIteration.push(systemDictionary[wormholeDictionary[wormhole].target]);
+                if (connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].wormhole.source]) &&
+                    !connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].wormhole.target])) {
+                    foundThisIteration.push(systemDictionary[wormholeDictionary[wormhole].wormhole.target]);
                 }
-                if (!connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].source]) &&
-                    connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].target])) {
-                    foundThisIteration.push(systemDictionary[wormholeDictionary[wormhole].source]);
+                if (!connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].wormhole.source]) &&
+                    connectedSystems.includes(systemDictionary[wormholeDictionary[wormhole].wormhole.target])) {
+                    foundThisIteration.push(systemDictionary[wormholeDictionary[wormhole].wormhole.source]);
                 }
             };
 
