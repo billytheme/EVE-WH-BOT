@@ -84,12 +84,14 @@ function writeScannerDictionary() {
 export function resetRankings() {
     // Generate the ranking and send it to discord, reset the rankings, and 
     // write the new (empty dictionary)
-    generateRanking();
+
+    // Force the previous month, as this will be run in the new month, but be about the old month
+    generateRanking(new Date(Date.now()).getMonth() - 1);
     scannerDictionary = {}
     writeScannerDictionary();
 }
 
-export async function generateRanking() {
+export async function generateRanking(forceMonth: number = undefined) {
     // Create a list of character IDs in the dictionary
     let sortedScannerList: Array<number> = [];
     for (const characterID in scannerDictionary) {
@@ -109,9 +111,15 @@ export async function generateRanking() {
         currentRanking += 1;
     }
 
-    // Get current current month
+    let currentMonth: string
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    let currentMonth = months[new Date(Date.now()).getMonth()]
+
+    // Get current current month
+    if (forceMonth !== undefined) {
+        currentMonth = months[new Date(Date.now()).getMonth()]
+    }else{
+        currentMonth = months[forceMonth]
+    }
 
     let scannerListEmbed = {
         title: "Scanner ranking for " + currentMonth,
