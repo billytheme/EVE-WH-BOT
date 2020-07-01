@@ -30,4 +30,4 @@ client.on('ready', pathfinder.catchupOnUpdates);
 client.on('message', scannerRanking.parseMessage)
 
 // On the first of each month, reset the rankings
-schedule.scheduleJob('* * 1 * *', scannerRanking.resetRankings)
+schedule.scheduleJob('1 1 1 * *', scannerRanking.resetRankings)
