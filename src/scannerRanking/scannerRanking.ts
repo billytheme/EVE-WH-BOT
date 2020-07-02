@@ -115,7 +115,7 @@ export async function generateRanking(forceMonth: number = undefined) {
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     // Get current current month
-    if (forceMonth !== undefined) {
+    if (forceMonth == undefined) {
         currentMonth = months[new Date(Date.now()).getMonth()]
     }else{
         currentMonth = months[forceMonth]
