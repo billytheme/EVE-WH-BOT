@@ -3,6 +3,7 @@ import { client } from "./app"
 import * as webSocket from "ws"
 import * as zKillboardWatch from "./zKillboardWatch/zKillboardWatch"
 import * as scannerRanking from "./scannerRanking/scannerRanking"
+import * as killerRanking from "./killerRanking/killerRanking"
 import * as schedule from "node-schedule"
 
 // Initialise the Websocket for the zKill API
@@ -20,6 +21,8 @@ zKill.addEventListener('open', function () {
 // Occured in the pathfinder chain. If yes to both, then alert
 zKill.addEventListener('message', zKillboardWatch.parseKill);
 
+zKill.addEventListener('message', killerRanking.parseKill);
+
 // When we receive a message, pass it to the parse function
 client.on('message', pathfinder.parseMessage)
 
@@ -31,3 +34,4 @@ client.on('message', scannerRanking.parseMessage)
 
 // On the first of each month, reset the rankings
 schedule.scheduleJob('1 1 1 * *', scannerRanking.resetRankings)
+schedule.scheduleJob('1 1 1 * *', killerRanking.resetRankings)

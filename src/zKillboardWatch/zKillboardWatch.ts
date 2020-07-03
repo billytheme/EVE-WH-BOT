@@ -2,29 +2,7 @@ import { client } from "../app"
 import * as esijs from "esijs"
 import * as discord from "discord.js"
 import * as pathfinder from "../pathfinderParse/pathfinderParse"
-import { getAllianceName, getCharacterName, getCorporationName } from "../utils/utils"
-
-function isFriendlyKill(killData): boolean {
-    // A friendly kill is one where either the defender or any of the attackers are friendly
-
-    // First, we loop through all the attackers and check whether any of them are friendly to 
-    // generate a boolean representing if the any of the attackers are friendly 
-    let containsFriendlyAttacker = false;
-    (killData.attackers).forEach(attacker => {
-        if (attacker.alliance_id === Number(process.env.FRIENDLY_ALLIANCE)) {
-            containsFriendlyAttacker = true;
-        }
-    });
-
-    // This could be rewritten without the if statements, but in the interest of readability 
-    // it is kept in this form
-    if (killData.victim.alliance_id === Number(process.env.FRIENDLY_ALLIANCE) || containsFriendlyAttacker) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
+import { getAllianceName, getCharacterName, getCorporationName, isFriendlyKill } from "../utils/utils"
 
 function isKillInChain(killData): boolean {
     // Simple function that checks whether a given killData took place within the chain
