@@ -2,6 +2,7 @@ import * as discord from "discord.js"
 import { client } from "./app"
 import * as scannerRanking from "./scannerRanking/scannerRanking"
 import * as help from "./help/help"
+import * as killerRanking from "./killerRanking/killerRanking"
 
 // DEBUG
 import * as pathfinderParse from "./pathfinderParse/pathfinderParse"
@@ -19,6 +20,9 @@ client.on('message', async function (message: discord.Message) {
                 break;
             case 'scanners':
                 scannerRanking.generateRanking();
+                break;
+            case 'killers':
+                killerRanking.generateRanking();
                 break;
 
             // DEBUG
