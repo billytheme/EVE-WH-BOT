@@ -64,7 +64,7 @@ export async function generateRanking(forceMonth: number = undefined) {
     }
 
     let killerListEmbed = {
-        title: "Scanner ranking for " + currentMonth,
+        title: "PvP ranking for " + currentMonth,
         color: 0x1120f0,
         description: killerRankingString
     }
