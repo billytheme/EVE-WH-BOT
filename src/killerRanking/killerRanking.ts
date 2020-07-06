@@ -12,7 +12,7 @@ export async function parseKill(event: { data: any; type: string; }) {
     if (isfriendlyAttackers(killData)) {
         for (const attackerIndex in killData.attackers) {
             if (killData.attackers[attackerIndex].alliance_id !== undefined) {
-                if (killData.attackers[attackerIndex].alliance_id.toString() === process.env.FRIENDLY_ALLIANCE) {
+                if (killData.attackers[attackerIndex].alliance_id === Number(process.env.FRIENDLY_ALLIANCE)) {
                     if (killerDictionary[killData.attackers[attackerIndex].character_id] === undefined) {
                         killerDictionary[killData.attackers[attackerIndex].character_id] = 1;
                     } else {
