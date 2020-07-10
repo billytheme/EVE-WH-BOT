@@ -12,7 +12,7 @@ export async function parseKill(event: { data: any; type: string; }) {
     if (isfriendlyAttackers(killData)) {
         for (const attackerIndex in killData.attackers) {
             if (killData.attackers[attackerIndex].alliance_id !== undefined) {
-                if (killData.attackers[attackerIndex].alliance_id.toString() === process.env.FRIENDLY_ALLIANCE) {
+                if (killData.attackers[attackerIndex].alliance_id === Number(process.env.FRIENDLY_ALLIANCE)) {
                     if (killerDictionary[killData.attackers[attackerIndex].character_id] === undefined) {
                         killerDictionary[killData.attackers[attackerIndex].character_id] = 1;
                     } else {
@@ -30,12 +30,12 @@ export function resetRankings() {
     // write the new (empty dictionary)
 
     // Force the previous month, as this will be run in the new month, but be about the old month
-    generateRanking(new Date(Date.now()).getMonth() - 1);
+    generateRanking(new Date(Date.now()).getMonth() - 1, true);
     killerDictionary = {}
     writeKillerDictionary();
 }
 
-export async function generateRanking(forceMonth: number = undefined) {
+export async function generateRanking(forceMonth?: number, fullList?: boolean) {
     // Create a list of character IDs in the dictionary
     let sortedKillerList: Array<number> = [];
     for (const characterID in killerDictionary) {
@@ -49,8 +49,15 @@ export async function generateRanking(forceMonth: number = undefined) {
     // Generate the ranking list
     let killerRankingString = ''
     let currentRanking = 1
+    let listLength: number
 
-    for (const index in sortedKillerList) {
+    if(fullList){
+        listLength = sortedKillerList.length
+    } else {
+        listLength = Math.min(20, sortedKillerList.length)
+    }
+
+    for (let index = 0; index < listLength; index++) {
         killerRankingString += currentRanking + ': ' + (await getCharacterName(sortedKillerList[index])) + ' - ' + killerDictionary[sortedKillerList[index]] + ' points\n';
         currentRanking += 1;
     }

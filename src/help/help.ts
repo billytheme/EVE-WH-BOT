@@ -9,9 +9,9 @@ export function generateHelpPage() {
                     Returns this list.\n\
                     If another command is used as an argument, gives specific help for the command\n\n\
                     `scanners`\n\
-                    Returns the leaderboard for best scanners this month. Gain points by jumping new wormholes and scanning signatures. Only counts if you add them to Pathfinder!\n\n\
+                    Returns the leaderboard for best scanners this month. Gain points by jumping new wormholes and scanning signatures. Only counts if you add them to Pathfinder!\nOnly the top 20 are shown by default, use \"b!scanners -all\" to show the rest\n\n\
                     `killers`\n\
-                    Returns the leaderboard for the best PvP pilots this month. Gain points by killing ships!\n\n\
+                    Returns the leaderboard for the best PvP pilots this month. Gain points by killing ships!\nOnly the top 20 are shown by default, use \"b!killers -all\" to show the rest\n\n\
                     `carriers`\n\
                     performs a lookup for the best potential regions to kill carriers in",
         "color": 0x00e0bf,

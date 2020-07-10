@@ -86,12 +86,12 @@ export function resetRankings() {
     // write the new (empty dictionary)
 
     // Force the previous month, as this will be run in the new month, but be about the old month
-    generateRanking(new Date(Date.now()).getMonth() - 1);
+    generateRanking(new Date(Date.now()).getMonth() - 1, true);
     scannerDictionary = {}
     writeScannerDictionary();
 }
 
-export async function generateRanking(forceMonth: number = undefined) {
+export async function generateRanking(forceMonth?: number, fullList?: boolean) {
     // Create a list of character IDs in the dictionary
     let sortedScannerList: Array<number> = [];
     for (const characterID in scannerDictionary) {
@@ -105,8 +105,15 @@ export async function generateRanking(forceMonth: number = undefined) {
     // Generate the ranking list
     let scannerRankingString = ''
     let currentRanking = 1
+    let listLength: number
 
-    for (const index in sortedScannerList) {
+    if(fullList){
+        listLength = sortedScannerList.length
+    } else {
+        listLength = Math.min(20, sortedScannerList.length)
+    }
+
+    for (let index = 0; index < listLength; index++) {
         scannerRankingString += currentRanking + ': ' + (await getCharacterName(sortedScannerList[index])) + ' - ' + scannerDictionary[sortedScannerList[index]] + ' points\n';
         currentRanking += 1;
     }

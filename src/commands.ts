@@ -13,22 +13,30 @@ client.on('message', async function (message: discord.Message) {
 
     // If the message contains the command prefix and came from the correct channel, process it
     if (lowerMessage.slice(0, 2) == 'b!' && message.channel.id === process.env.BOT_CHANNEL) {
-        // Only look at the part after the prefix
-        switch (lowerMessage.slice(2)) {
+        // Only look at the part after the prefix, and before any other arguments
+        switch (lowerMessage.slice(2).split(' ')[0]) {
             case 'help':
                 help.generateHelpPage()
                 break;
             case 'scanners':
-                scannerRanking.generateRanking();
+                if (lowerMessage.slice(2).split(' ')[1] == '-all') {
+                    scannerRanking.generateRanking(undefined, true);
+                } else {
+                    scannerRanking.generateRanking();
+                }
                 break;
             case 'killers':
-                killerRanking.generateRanking();
+                if (lowerMessage.slice(2).split(' ')[1] == '-all') {
+                    killerRanking.generateRanking(undefined, true);
+                } else {
+                    killerRanking.generateRanking();
+                }
                 break;
 
             // DEBUG
             case 'connected':
                 let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
-                channel.send({ embed: {description: "loading"} });
+                channel.send({ embed: { description: "loading" } });
 
                 let descriptionString = ''
 
