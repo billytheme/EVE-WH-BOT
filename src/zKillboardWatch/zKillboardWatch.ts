@@ -41,6 +41,8 @@ async function generateAlert(killData: any) {
         },
         "fields": [
             {
+                // Since there can be any number of attackers, we are just going to look at
+                // the first one, which is also the one who scored the final blow
                 name: 'Attacker (final blow)',
                 value: await getCharacterName(killData.attackers[0].character_id),
                 inline: true
@@ -56,6 +58,7 @@ async function generateAlert(killData: any) {
                 inline: true
             },
             {
+                // Insert a newline field to seperate the victim and  attackers info
                 name: '\u200b',
                 value: '\u200b',
                 inline: false
@@ -77,6 +80,8 @@ async function generateAlert(killData: any) {
             },
         ],
     };
+
+    // Send the embed
     let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
     channel.send({ embed: alertEmbed });
 }

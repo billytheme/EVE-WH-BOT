@@ -19,6 +19,7 @@ client.on('message', async function (message: discord.Message) {
                 help.generateHelpPage()
                 break;
             case 'scanners':
+                // We have two options here, so we have a little extra logic to handle that
                 if (lowerMessage.slice(2).split(' ')[1] == '-all') {
                     scannerRanking.generateRanking(undefined, true);
                 } else {
@@ -26,34 +27,13 @@ client.on('message', async function (message: discord.Message) {
                 }
                 break;
             case 'killers':
+                // We have two options here, so we have a little extra logic to handle that
                 if (lowerMessage.slice(2).split(' ')[1] == '-all') {
                     killerRanking.generateRanking(undefined, true);
                 } else {
                     killerRanking.generateRanking();
                 }
                 break;
-
-            // DEBUG
-            case 'connected':
-                let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
-                channel.send({ embed: { description: "loading" } });
-
-                let descriptionString = ''
-
-                let systems = pathfinderParse.getConnectedSystems()
-                for (const system in systems) {
-                    if (systems[system] !== undefined) {
-                        descriptionString += (await esijs.universe.systems.systemInfo(systems[system])).name + ', '
-                    }
-                    else {
-                        descriptionString += 'undefined' + ', '
-                    }
-                }
-
-                let connectedEmbed = {
-                    description: descriptionString
-                }
-                channel.send({ embed: connectedEmbed });
         }
     }
 })

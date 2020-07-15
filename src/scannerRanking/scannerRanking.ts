@@ -20,8 +20,9 @@ function parseUpdate(embed: MessageEmbed) {
     // Check whether the update details either a new connection or new signature, and add 
     // 1 point to the relevant character if so
 
-    //Switch for the three types of message: Created, Updated, or Deleted
-    //Both created and updated will give new info to store. JS allows us to treat them the same
+    // Switch for the three types of message: Created, Updated, or Deleted
+    // Both created and updated will give new info to store. JS allows us to treat them the 
+    // same by omitting the "break" after Created
     switch (embed.title.split(' ')[0]) {
         case "Created":
         case "Updated":
@@ -50,9 +51,9 @@ function parseUpdate(embed: MessageEmbed) {
                         switch (element.slice(0, element.lastIndexOf(':')).trim()) {
                             case "groupId":
                                 // Check that the signature is one that needs to be scanned.
-                                // 0: Not specified
-                                // 1: Gas
-                                // 6: Combat site
+                                // 0: Not scanned
+                                // 1: Combat site, shows up without being scanned
+                                // 6: Ore site, shows up without being scanned
                                 if (element.slice(element.lastIndexOf('➜') + 1).trim() !== '0'
                                     && element.slice(element.lastIndexOf('➜') + 1).trim() !== '1'
                                     && element.slice(element.lastIndexOf('➜') + 1).trim() !== '6') {
@@ -71,6 +72,8 @@ function parseUpdate(embed: MessageEmbed) {
                     });
                     break;
             }
+
+            // Write the updated dictionary to file
             writeScannerDictionary();
             break;
     }
@@ -102,42 +105,50 @@ export async function generateRanking(forceMonth?: number, fullList?: boolean) {
         return scannerDictionary[upperCompare] - scannerDictionary[lowerCompare];
     })
 
-    // Generate the ranking list
+    // Declare the variables for us to initialise soon
     let scannerRankingString = ''
     let currentRanking = 1
     let listLength: number
 
+    // Set the length of the list that we want
     if(fullList){
         listLength = sortedScannerList.length
     } else {
         listLength = Math.min(20, sortedScannerList.length)
     }
 
+    //Create the list entries. Repeat the number of times specified above
     for (let index = 0; index < listLength; index++) {
         scannerRankingString += currentRanking + ': ' + (await getCharacterName(sortedScannerList[index])) + ' - ' + scannerDictionary[sortedScannerList[index]] + ' points\n';
         currentRanking += 1;
     }
 
+    // Since JS does not give any easy ways to convert from month integer to month string, 
+    // we have an array to convert from one to the other
     let currentMonth: string
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    // Get current current month
+    // Get current current month. Sometimes we force the month, such as when we are generating 
+    // final reports from the previous month
     if (forceMonth == undefined) {
         currentMonth = months[new Date(Date.now()).getMonth()]
     }else{
         currentMonth = months[forceMonth]
     }
 
+    // Generate the embed object
     let scannerListEmbed = {
         title: "Scanner ranking for " + currentMonth,
         color: 0x1120f0,
         description: scannerRankingString
     }
 
+    // Send the embed object
     let channel = <TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
     channel.send({ embed: scannerListEmbed })
 }
 
+// Read the signature data from file on load
 fs.readFile("data/scannerDictionary.json", { encoding: 'utf-8', flag: 'r+' }, function (err, fileData) {
     if (err) {
         console.error(err);

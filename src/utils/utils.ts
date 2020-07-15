@@ -1,8 +1,8 @@
-import { corporation, character } from "esijs"
 import { getAllianceName } from "./getAllianceName"
 import { getCharacterName } from "./getCharacterName"
 import { getCorporationName } from "./getCorporationName"
 
+// Attach the other functions from other file to the exports of this one
 export { getAllianceName, getCharacterName, getCorporationName }
 
 export function isFriendlyKill(killData): boolean {

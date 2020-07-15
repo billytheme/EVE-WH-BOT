@@ -1,7 +1,8 @@
 import { client } from "../app"
-import { Message, TextChannel } from "discord.js"
+import { TextChannel } from "discord.js"
 
 export function generateHelpPage() {
+    // Very simple function, no dynamic parts. Just sends the static help page on command
     const helpEmbed = {
         "title": "Command list",
         "description": "Current Prefix: `b!`\n\n\
