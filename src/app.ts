@@ -8,10 +8,11 @@ dotenv.config();
 //Initialise the client
 export let client: discord.Client = new discord.Client();
 
+// We import events and commands strictly for side effects
+// Events sets up the functions to maintain our database based on external inputs (Pathfinder, zKill)
+// Commands sets up the functions to display info to the users
 import "./events"
 import "./commands"
-
-let killerDictionary: Record<number, number> = {};
 
 client.on('message', function (message) {
     if (message.channel.id === process.env.BOT_CHANNEL) {
@@ -25,57 +26,8 @@ client.on('message', function (message) {
 
             message.channel.send({ embed: exampleEmbed });
         }
-
-        if (message.content === 'b!alert') {
-            const exampleEmbed = {
-                "title": "Kitsune killed in J000000 - 4 Jumps from Deep",
-                "color": 0xff0000,
-                thumbnail: {
-                    url: 'https://images.evetech.net/types/11194/render?size=128',
-                },
-                "fields": [
-                    {
-                        name: 'Attacker',
-                        value: 'ExookiZ',
-                        inline: true
-                    },
-                    {
-                        name: 'Corporation',
-                        value: 'The Dark Space Initiative',
-                        inline: true
-                    },
-                    {
-                        name: 'Alliance',
-                        value: 'Initiative Mercenaries',
-                        inline: true
-                    },
-                    {
-                        name: '\u200b',
-                        value: '\u200b',
-                        inline: false
-                    },
-                    {
-                        name: 'Victim',
-                        value: 'Braxus Deninard',
-                        inline: true
-                    },
-                    {
-                        name: 'Corporation',
-                        value: 'Hard Knocks Inc.',
-                        inline: true
-                    },
-                    {
-                        name: 'Alliance',
-                        value: 'Hard Knocks Citizens',
-                        inline: true
-                    },
-                ],
-            };
-
-            message.channel.send({ embed: exampleEmbed });
-        }
     }
 });
 
-//Now that we've set the application up, connect to discord
+//Connect the application to discord
 client.login(process.env.CLIENT_SECRET_KEY);

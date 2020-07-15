@@ -131,8 +131,11 @@ async function parseUpdate(embed: MessageEmbed) {
 }
 
 function checkWormholeTimeout() {
+    // Bandaid solution. Sometimes Pathfinder will just not send the deletion method, so we add
+    // a timeout of 1.5 days to all connections just in case
     for (const wormholeDatabaseID in wormholeDictionary){
         let timeSinceCreated = Date.now() - wormholeDictionary[wormholeDatabaseID].created;
+        // 129600000 is the number of seconds in 1.5 days
         if (timeSinceCreated > 129600000){
             delete wormholeDictionary[wormholeDatabaseID];
         }
