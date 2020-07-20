@@ -1,16 +1,17 @@
 import * as pathfinder from "./pathfinderParse/pathfinderParse"
 import { client } from "./app"
-import * as webSocket from "ws"
 import * as zKillboardWatch from "./zKillboardWatch/zKillboardWatch"
 import * as scannerRanking from "./scannerRanking/scannerRanking"
 import * as killerRanking from "./killerRanking/killerRanking"
 import * as schedule from "node-schedule"
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 // Initialise the Websocket for the zKill API
-let zKill = new webSocket("wss://zkillboard.com:2096")
+let zKill = new ReconnectingWebSocket("wss://zkillboard.com:2096")
 
 // Subscribe to the killfeed to get kills as they happen
 zKill.addEventListener('open', function () {
+    console.error("Opened the websocket")
     zKill.send(JSON.stringify({
         "action": "sub",
         "channel": "killstream"
@@ -21,14 +22,14 @@ zKill.addEventListener('open', function () {
 // Occured in the pathfinder chain. If yes to both, then alert
 zKill.addEventListener('message', zKillboardWatch.parseKill);
 
+// Check whether the kill included friendly attackers, and if so update the kill rankings
 zKill.addEventListener('message', killerRanking.parseKill);
 
-//If we  have errors, log them. Dunno why it closes sometimes
+// If we  have errors, log them. Dunno why it closes sometimes
 zKill.addEventListener('close', function (event) {
     console.error(new Date(Date.now()).toUTCString);
     console.error(event);
 })
-
 zKill.addEventListener('error', function (event) {
     console.error(new Date(Date.now()).toUTCString);
     console.error(event);
