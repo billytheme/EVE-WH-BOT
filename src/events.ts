@@ -23,6 +23,17 @@ zKill.addEventListener('message', zKillboardWatch.parseKill);
 
 zKill.addEventListener('message', killerRanking.parseKill);
 
+//If we  have errors, log them. Dunno why it closes sometimes
+zKill.addEventListener('close', function (event) {
+    console.error(new Date(Date.now()).toUTCString);
+    console.error(event);
+})
+
+zKill.addEventListener('error', function (event) {
+    console.error(new Date(Date.now()).toUTCString);
+    console.error(event);
+})
+
 // When we receive a message, pass it to the parse function
 client.on('message', pathfinder.parseMessage)
 
