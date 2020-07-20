@@ -23,7 +23,7 @@ zKill.addEventListener('message', zKillboardWatch.parseKill);
 
 zKill.addEventListener('message', killerRanking.parseKill);
 
-//If we  have errors, log them. Dunno why it closes sometimes
+// If we  have errors, log them. Dunno why it closes sometimes
 zKill.addEventListener('close', function (event) {
     console.error(new Date(Date.now()).toUTCString);
     console.error(event);
