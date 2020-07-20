@@ -6,7 +6,7 @@ import { TextChannel } from "discord.js"
 
 let killerDictionary: Record<number, number> = {};
 
-export function parseKill(event: MessageEvent){
+export function parseKill(event: { data: any, type: string }) {
     // parse the stringified data into an object we can process
     let killData = JSON.parse(event.data);
 
@@ -58,7 +58,7 @@ export async function generateRanking(forceMonth?: number, fullList?: boolean) {
     let listLength: number
 
     // Set the length of the list that we want
-    if(fullList){
+    if (fullList) {
         listLength = sortedKillerList.length
     } else {
         listLength = Math.min(20, sortedKillerList.length)
