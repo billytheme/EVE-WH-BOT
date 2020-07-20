@@ -6,7 +6,7 @@ import { TextChannel } from "discord.js"
 
 let killerDictionary: Record<number, number> = {};
 
-export async function parseKill(event: { data: string; type: string; }) {
+export function parseKill(event: MessageEvent){
     // parse the stringified data into an object we can process
     let killData = JSON.parse(event.data);
 
