@@ -3,10 +3,7 @@ import { client } from "./app"
 import * as scannerRanking from "./scannerRanking/scannerRanking"
 import * as help from "./help/help"
 import * as killerRanking from "./killerRanking/killerRanking"
-
-// DEBUG
-import * as pathfinderParse from "./pathfinderParse/pathfinderParse"
-import * as esijs from "esijs"
+import { TextChannel } from "discord.js"
 
 client.on('message', async function (message: discord.Message) {
     let lowerMessage = message.content.toLowerCase();
@@ -33,6 +30,17 @@ client.on('message', async function (message: discord.Message) {
                 } else {
                     killerRanking.generateRanking();
                 }
+                break;
+            default:
+                // This is if the user uses the prefix b! but without a valid operation attached
+                let errorEmbed = {
+                    title: "Error: Unrecognized command",
+                    color: 0x1120f0,
+                    description: "Please ensure a you use a valid command. For a list of valid commands, run `b!help`"
+                }
+
+                let channel = <TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
+                channel.send({ embed: errorEmbed })
                 break;
         }
     }

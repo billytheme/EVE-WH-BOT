@@ -6,7 +6,6 @@ import * as killerRanking from "./killerRanking/killerRanking"
 import * as schedule from "node-schedule"
 import * as webSocket from "ws"
 import { clearInterval } from "timers"
-import { TextChannel } from 'discord.js'
 
 let zKill: webSocket;
 let reconnectGenerator: NodeJS.Timeout;
@@ -49,6 +48,7 @@ function runReconnect() {
     })
 }
 
+// Start the websocket
 runReconnect()
 
 // When we receive a message, pass it to the parse function
