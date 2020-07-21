@@ -12,9 +12,7 @@ export function generateHelpPage() {
                     `scanners`\n\
                     Returns the leaderboard for best scanners this month. Gain points by jumping new wormholes and scanning signatures. Only counts if you add them to Pathfinder!\nOnly the top 20 are shown by default, use \"b!scanners -all\" to show the rest\n\n\
                     `killers`\n\
-                    Returns the leaderboard for the best PvP pilots this month. Gain points by killing ships!\nOnly the top 20 are shown by default, use \"b!killers -all\" to show the rest\n\n\
-                    `carriers`\n\
-                    performs a lookup for the best potential regions to kill carriers in",
+                    Returns the leaderboard for the best PvP pilots this month. Gain points by killing ships!\nOnly the top 20 are shown by default, use \"b!killers -all\" to show the rest\n\n",
         "color": 0x00e0bf,
     };
     let channel = <TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
