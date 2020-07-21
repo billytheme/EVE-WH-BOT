@@ -86,7 +86,7 @@ export async function generateRanking(forceMonth?: number, fullList?: boolean) {
     // Generate the embed object
     let killerListEmbed = {
         title: "PvP ranking for " + currentMonth,
-        color: 0x1120f0,
+        color: 0xf27f13,
         description: killerRankingString
     }
 
