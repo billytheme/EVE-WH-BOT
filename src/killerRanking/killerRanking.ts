@@ -1,8 +1,6 @@
 import { isfriendlyAttackers } from "../utils/utils"
 import * as fs from "fs"
-import { client } from "../app"
-import { getCharacterName } from "../utils/utils"
-import { TextChannel } from "discord.js"
+import { sendRankingList } from "../utils/utils"
 
 let killerDictionary: Record<number, number> = {};
 
@@ -41,35 +39,6 @@ export function resetRankings() {
 }
 
 export async function generateRanking(forceMonth?: number, fullList?: boolean) {
-    // Create a list of character IDs in the dictionary
-    let sortedKillerList: Array<number> = [];
-    for (const characterID in killerDictionary) {
-        sortedKillerList.push(Number(characterID))
-    }
-
-    // Sort the list based on their score
-    sortedKillerList.sort(function (lowerCompare, upperCompare): number {
-        return killerDictionary[upperCompare] - killerDictionary[lowerCompare];
-    })
-
-    // Declare the variables for us to initialise soon
-    let killerRankingString = ''
-    let currentRanking = 1
-    let listLength: number
-
-    // Set the length of the list that we want
-    if (fullList) {
-        listLength = sortedKillerList.length
-    } else {
-        listLength = Math.min(20, sortedKillerList.length)
-    }
-
-    //Create the list entries. Repeat the number of times specified above
-    for (let index = 0; index < listLength; index++) {
-        killerRankingString += currentRanking + ': ' + (await getCharacterName(sortedKillerList[index])) + ' - ' + killerDictionary[sortedKillerList[index]] + ' points\n';
-        currentRanking += 1;
-    }
-
     // Since JS does not give any easy ways to convert from month integer to month string, 
     // we have an array to convert from one to the other
     let currentMonth: string
@@ -77,22 +46,13 @@ export async function generateRanking(forceMonth?: number, fullList?: boolean) {
 
     // Get current current month. Sometimes we force the month, such as when we are generating 
     // final reports from the previous month
-    if (forceMonth == undefined) {
+    if (forceMonth === undefined) {
         currentMonth = months[new Date(Date.now()).getMonth()]
     } else {
         currentMonth = months[forceMonth]
     }
 
-    // Generate the embed object
-    let killerListEmbed = {
-        title: "PvP ranking for " + currentMonth,
-        color: 0xf27f13,
-        description: killerRankingString
-    }
-
-    // Send the embed object
-    let channel = <TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
-    channel.send({ embed: killerListEmbed })
+    sendRankingList(killerDictionary, fullList, "PvP ranking for " + currentMonth)
 }
 
 function writeKillerDictionary() {
