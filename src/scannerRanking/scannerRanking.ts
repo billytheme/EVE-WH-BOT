@@ -1,7 +1,6 @@
 import { Message, MessageEmbed, TextChannel } from "discord.js"
 import * as fs from "fs"
-import { client } from "../app"
-import { getCharacterName } from "../utils/utils"
+import { sendRankingList } from "../utils/utils"
 
 //1 point for scanning a signature to group
 //1 point for scanning a wormhole and jumping it (in addition)
@@ -95,34 +94,6 @@ export function resetRankings() {
 }
 
 export async function generateRanking(forceMonth?: number, fullList?: boolean) {
-    // Create a list of character IDs in the dictionary
-    let sortedScannerList: Array<number> = [];
-    for (const characterID in scannerDictionary) {
-        sortedScannerList.push(Number(characterID))
-    }
-    // Sort the list based on their score
-    sortedScannerList.sort(function (lowerCompare, upperCompare): number {
-        return scannerDictionary[upperCompare] - scannerDictionary[lowerCompare];
-    })
-
-    // Declare the variables for us to initialise soon
-    let scannerRankingString = ''
-    let currentRanking = 1
-    let listLength: number
-
-    // Set the length of the list that we want
-    if(fullList){
-        listLength = sortedScannerList.length
-    } else {
-        listLength = Math.min(20, sortedScannerList.length)
-    }
-
-    //Create the list entries. Repeat the number of times specified above
-    for (let index = 0; index < listLength; index++) {
-        scannerRankingString += currentRanking + ': ' + (await getCharacterName(sortedScannerList[index])) + ' - ' + scannerDictionary[sortedScannerList[index]] + ' points\n';
-        currentRanking += 1;
-    }
-
     // Since JS does not give any easy ways to convert from month integer to month string, 
     // we have an array to convert from one to the other
     let currentMonth: string
@@ -130,22 +101,13 @@ export async function generateRanking(forceMonth?: number, fullList?: boolean) {
 
     // Get current current month. Sometimes we force the month, such as when we are generating 
     // final reports from the previous month
-    if (forceMonth == undefined) {
+    if (forceMonth === undefined) {
         currentMonth = months[new Date(Date.now()).getMonth()]
-    }else{
+    } else {
         currentMonth = months[forceMonth]
     }
 
-    // Generate the embed object
-    let scannerListEmbed = {
-        title: "Scanner ranking for " + currentMonth,
-        color: 0x1120f0,
-        description: scannerRankingString
-    }
-
-    // Send the embed object
-    let channel = <TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
-    channel.send({ embed: scannerListEmbed })
+    sendRankingList(scannerDictionary, fullList, "Scanner Ranking for " + currentMonth)
 }
 
 // Read the signature data from file on load
