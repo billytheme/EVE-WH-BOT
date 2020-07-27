@@ -43,6 +43,11 @@ describe('utils', function () {
             expect(utils.isFriendlyKill(potentialProblemsExample)).to.be.equal(true)
         })
     })
+    describe('isWormholeKill', function () {
+        it('should return true if the system is a wormhole system', function () {
+            expect(utils.isWormholeKill({solar_system_id: 31001565}))
+        })
+    })
 })
 
 let friendlyVictim = {

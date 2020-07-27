@@ -6,7 +6,7 @@ import { TextChannel } from "discord.js"
 import { getSystemRegion } from "./getSystemRegion"
 
 // Attach the other functions from other file to the exports of this one
-export { getAllianceName, getCharacterName, getCorporationName }
+export { getAllianceName, getCharacterName, getCorporationName, getSystemRegion }
 
 export function isFriendlyKill(killData): boolean {
     // A friendly kill is one where either the defender or any of the attackers are friendly
@@ -39,12 +39,12 @@ export function isfriendlyVictim(killData): boolean {
 }
 
 export async function isWormholeKill(killData): Promise<boolean> {
-    let regionID = await getSystemRegion(killData.solar_system_id)
-    // Wormhole Region IDs occur between 11000000 and 12000000
-    return regionID > 11000000 && regionID < 12000000
+    let regionID = Number(await getSystemRegion(killData.solar_system_id))
+    return isWormholeRegion(regionID)
 }
 
 export function isWormholeRegion(regionID: number): boolean {
+    // Wormhole Region IDs occur between 11000000 and 12000000
     if (regionID > 11000000 && regionID < 12000000) {
         return true
     }
