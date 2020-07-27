@@ -3,6 +3,7 @@ import { getCharacterName } from "./getCharacterName"
 import { getCorporationName } from "./getCorporationName"
 import { client } from "../app"
 import { TextChannel } from "discord.js"
+import { getSystemRegion } from "./getSystemRegion"
 
 // Attach the other functions from other file to the exports of this one
 export { getAllianceName, getCharacterName, getCorporationName }
@@ -35,6 +36,21 @@ export function isfriendlyAttackers(killData): boolean {
 export function isfriendlyVictim(killData): boolean {
     // Check if the victim was part of out friendly alliance
     return killData.victim.alliance_id === Number(process.env.FRIENDLY_ALLIANCE)
+}
+
+export async function isWormholeKill(killData): Promise<boolean> {
+    let regionID = await getSystemRegion(killData.solar_system_id)
+    // Wormhole Region IDs occur between 11000000 and 12000000
+    return regionID > 11000000 && regionID < 12000000
+}
+
+export function isWormholeRegion(regionID: number): boolean {
+    if (regionID > 11000000 && regionID < 12000000) {
+        return true
+    }
+    else {
+        return false
+    }
 }
 
 export async function sendRankingList(rankingList: Record<number, number>, fullList: boolean, mainTitle: string) {
