@@ -2,7 +2,7 @@ import { client } from "../app"
 import * as esijs from "esijs"
 import * as discord from "discord.js"
 import * as pathfinder from "../pathfinderParse/pathfinderParse"
-import { getAllianceName, getCharacterName, getCorporationName, isFriendlyKill, isWormholeRegion, getSystemRegion } from "../utils/utils"
+import { getAllianceName, getCharacterName, getCorporationName, isFriendlyKill, isWormholeKill } from "../utils/utils"
 
 function isKillInChain(killData): boolean {
     // Simple function that checks whether a given killData took place within the chain
@@ -18,7 +18,7 @@ export async function parseKill(event: { data: any, type: string }) {
 
     let killData = JSON.parse(event.data);
 
-    if (!isFriendlyKill(killData) && isKillInChain(killData) && isWormholeRegion(killData)) {
+    if (!isFriendlyKill(killData) && isKillInChain(killData) && isWormholeKill(killData)) {
         generateAlert(killData)
     }
 }
