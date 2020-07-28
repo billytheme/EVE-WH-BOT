@@ -38,9 +38,8 @@ export function isfriendlyVictim(killData): boolean {
     return killData.victim.alliance_id === Number(process.env.FRIENDLY_ALLIANCE)
 }
 
-export async function isWormholeKill(killData): Promise<boolean> {
-    let regionID = Number(await getSystemRegion(killData.solar_system_id))
-    return isWormholeRegion(regionID)
+export function isWormholeKill(killData): boolean {
+    return killData.solar_system_id > 31000000 && killData.solar_system_id < 32000000
 }
 
 export function isWormholeRegion(regionID: number): boolean {

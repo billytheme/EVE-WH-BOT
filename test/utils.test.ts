@@ -1,8 +1,8 @@
-import { expect } from "chai"
+import { expect, util } from "chai"
 import * as utils from "../src/utils/utils"
 
 describe('utils', function () {
-    this.timeout(5000)
+    this.timeout(10000)
     describe('getAllianceName', function () {
         it('should return the correct alliance name for the Alliance ID', async () => {
             expect(await utils.getAllianceName(99009511)).to.be.equal('Unchained Alliance')
@@ -45,7 +45,11 @@ describe('utils', function () {
     })
     describe('isWormholeKill', function () {
         it('should return false if the system is a not wormhole system', async function () {
-            expect(await utils.isWormholeKill(notWormholeTestKill)).to.be.equal(false)
+            expect(utils.isWormholeKill(notWormholeTestKill)).to.be.equal(false)
+            expect(utils.isWormholeKill(incorrectClassification)).to.be.equal(false)
+        })
+        it('should return true of the kill happened in a wormhole', function () {
+            expect(utils.isWormholeKill(wormholeTestKill)).to.be.equal(true)
         })
     })
 })
@@ -95,6 +99,157 @@ let notWormholeTestKill = {
         "ship_type_id": 596
     }
 }
+
+let incorrectClassification = {
+    "attackers": [
+        {
+            "alliance_id": 498125261,
+            "character_id": 680120572,
+            "corporation_id": 263585335,
+            "damage_done": 585,
+            "final_blow": true,
+            "security_status": 4.1,
+            "ship_type_id": 11567,
+            "weapon_type_id": 14190
+        }
+    ],
+    "killmail_id": 85970686,
+    "killmail_time": "2020-07-28T22:29:37Z",
+    "solar_system_id": 30003135,
+    "victim": {
+        "alliance_id": 498125261,
+        "character_id": 2114830095,
+        "corporation_id": 263585335,
+        "damage_taken": 585,
+        "items": [
+            {
+                "flag": 19,
+                "item_type_id": 21857,
+                "quantity_dropped": 1,
+                "singleton": 0
+            },
+            {
+                "flag": 27,
+                "item_type_id": 3636,
+                "quantity_destroyed": 1,
+                "singleton": 0
+            },
+            {
+                "flag": 28,
+                "item_type_id": 3651,
+                "quantity_dropped": 1,
+                "singleton": 0
+            }
+        ],
+        "position": {
+            "x": 147293240.80096433,
+            "y": 67397808.26349258,
+            "z": 303218959.33558047
+        },
+        "ship_type_id": 588
+    }
+}
+
+let wormholeTestKill = {
+    "attackers":[
+       {
+          "damage_done":1538,
+          "faction_id":500021,
+          "final_blow":true,
+          "security_status":0.0,
+          "ship_type_id":30461
+       }
+    ],
+    "killmail_id":85777769,
+    "killmail_time":"2020-07-20T16:56:46Z",
+    "solar_system_id":31002458,
+    "victim":{
+       "alliance_id":99009700,
+       "character_id":2116199426,
+       "corporation_id":1374301206,
+       "damage_taken":1538,
+       "items":[
+          {
+             "flag":12,
+             "item_type_id":2605,
+             "quantity_destroyed":1,
+             "singleton":0
+          },
+          {
+             "flag":19,
+             "item_type_id":440,
+             "quantity_dropped":1,
+             "singleton":0
+          },
+          {
+             "flag":11,
+             "item_type_id":2605,
+             "quantity_destroyed":1,
+             "singleton":0
+          },
+          {
+             "flag":21,
+             "item_type_id":30834,
+             "quantity_destroyed":1,
+             "singleton":0
+          },
+          {
+             "flag":93,
+             "item_type_id":31213,
+             "quantity_destroyed":1,
+             "singleton":0
+          },
+          {
+             "flag":20,
+             "item_type_id":30832,
+             "quantity_destroyed":1,
+             "singleton":0
+          },
+          {
+             "flag":92,
+             "item_type_id":31213,
+             "quantity_destroyed":1,
+             "singleton":0
+          },
+          {
+             "flag":28,
+             "item_type_id":11577,
+             "quantity_dropped":1,
+             "singleton":0
+          },
+          {
+             "flag":27,
+             "item_type_id":30488,
+             "quantity_destroyed":8,
+             "singleton":0
+          },
+          {
+             "flag":22,
+             "item_type_id":2038,
+             "quantity_destroyed":1,
+             "singleton":0
+          },
+          {
+             "flag":27,
+             "item_type_id":17938,
+             "quantity_dropped":1,
+             "singleton":0
+          },
+          {
+             "flag":23,
+             "item_type_id":21857,
+             "quantity_dropped":1,
+             "singleton":0
+          }
+       ],
+       "position":{
+          "x":58891949312.8043,
+          "y":-205931122688.24966,
+          "z":338287739787.5049
+       },
+       "ship_type_id":605
+    }
+ }
 
 let friendlyVictim = {
     attackers: [
