@@ -18,7 +18,7 @@ export async function parseKill(event: { data: any, type: string }) {
 
     let killData = JSON.parse(event.data);
 
-    if (!isFriendlyKill(killData) && isKillInChain(killData) && isWormholeKill(killData)) {
+    if (!isFriendlyKill(killData) && isKillInChain(killData) && await isWormholeKill(killData)) {
         generateAlert(killData)
     }
 }
