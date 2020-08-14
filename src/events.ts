@@ -16,7 +16,7 @@ function runReconnect() {
     // detect and reconnect manually.
 
     // Initialise the Websocket for the zKill API
-    zKill = new webSocket("wss://zkillboard.com:2096")
+    zKill = new webSocket("wss://zkillboard.com/websocket/")
 
     // Subscribe to the killfeed to get kills as they happen, as well as clearing the reconnect 
     // generator if it was running
