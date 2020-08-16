@@ -1,6 +1,6 @@
 import { Message, MessageEmbed, TextChannel } from "discord.js"
 import * as fs from "fs"
-import { sendRankingList } from "../utils/utils"
+import { sendRankingList, getCharacterName } from "../utils/utils"
 
 //1 point for scanning a signature to group
 //1 point for scanning a wormhole and jumping it (in addition)
@@ -117,8 +117,14 @@ fs.readFile("data/scannerDictionary.json", { encoding: 'utf-8', flag: 'r+' }, fu
     }
     try {
         scannerDictionary = JSON.parse(fileData)
+
+        // Request all character IDs currently in the ranking list to generate a cache and increase the speed of retrieval
+        for (let characterID in scannerDictionary) {
+            getCharacterName(parseInt(characterID))
+        }
     }
     catch (err) {
         scannerDictionary = {}
     }
 })
+
