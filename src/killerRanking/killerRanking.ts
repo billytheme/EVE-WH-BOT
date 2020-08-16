@@ -1,6 +1,6 @@
 import { isfriendlyAttackers } from "../utils/utils"
 import * as fs from "fs"
-import { sendRankingList } from "../utils/utils"
+import { sendRankingList, getCharacterName } from "../utils/utils"
 
 let killerDictionary: Record<number, number> = {};
 
@@ -67,6 +67,11 @@ fs.readFile("data/killerDictionary.json", { encoding: 'utf-8', flag: 'r+' }, fun
     }
     try {
         killerDictionary = JSON.parse(fileData)
+
+        // Request all character IDs currently in the ranking list to generate a cache and increase the speed of retrieval
+        for (let characterID in killerDictionary) {
+            getCharacterName(parseInt(characterID))
+        }
     }
     catch (err) {
         killerDictionary = {}
