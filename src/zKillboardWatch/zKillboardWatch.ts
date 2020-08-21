@@ -37,7 +37,7 @@ async function generateAlert(killData: any) {
         thumbnail: {
             url: 'https://images.evetech.net/types/'
                 + killData.victim.ship_type_id
-                + '/render?size=128',
+                + '/icon?size=128',
         },
         "fields": [
             {
