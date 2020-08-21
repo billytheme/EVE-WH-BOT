@@ -1,6 +1,7 @@
 import { Message, MessageEmbed, TextChannel } from "discord.js"
 import * as fs from "fs"
 import { sendRankingList, getCharacterName } from "../utils/utils"
+import { getConnectedSystems, getSystemIDFromPathfinderID } from "../pathfinderParse/pathfinderParse"
 
 //1 point for scanning a signature to group
 //1 point for scanning a wormhole and jumping it (in addition)
@@ -32,16 +33,20 @@ function parseUpdate(embed: MessageEmbed) {
                             // We simply check for the source being updated to add points,
                             // as this will occur only when a connection is created
                             case "source":
-                                let characterID = embed.author.name.slice(embed.author.name.indexOf('#') + 1,
-                                    embed.author.name.length);
 
-                                // If the character already has a score, increase it, otherwise set it to 1
-                                if (scannerDictionary[characterID] !== undefined) {
-                                    scannerDictionary[characterID] += 1;
-                                } else {
-                                    scannerDictionary[characterID] = 1;
+                                // Check that the scanned sig is connected to deep
+                                if (getConnectedSystems().includes(getSystemIDFromPathfinderID(Number(embed.title.split(' ')[3].replace('#', ''))))) {
+                                    let characterID = embed.author.name.slice(embed.author.name.indexOf('#') + 1,
+                                        embed.author.name.length);
+
+                                    // If the character already has a score, increase it, otherwise set it to 1
+                                    if (scannerDictionary[characterID] !== undefined) {
+                                        scannerDictionary[characterID] += 1;
+                                    } else {
+                                        scannerDictionary[characterID] = 1;
+                                    }
+                                    break;
                                 }
-                                break;
                         }
                     });
                     break;
@@ -56,14 +61,18 @@ function parseUpdate(embed: MessageEmbed) {
                                 if (element.slice(element.lastIndexOf('➜') + 1).trim() !== '0'
                                     && element.slice(element.lastIndexOf('➜') + 1).trim() !== '1'
                                     && element.slice(element.lastIndexOf('➜') + 1).trim() !== '6') {
-                                    let characterID = embed.author.name.slice(embed.author.name.indexOf('#') + 1,
-                                        embed.author.name.length);
 
-                                    // If the character already has a score, increase it, otherwise set it to 1
-                                    if (scannerDictionary[characterID] !== undefined) {
-                                        scannerDictionary[characterID] += 1;
-                                    } else {
-                                        scannerDictionary[characterID] = 1;
+                                    // Check that the scanned sig is connected to deep
+                                    if (getConnectedSystems().includes(getSystemIDFromPathfinderID(Number(embed.title.split(' ')[3].replace('#', ''))))) {
+                                        let characterID = embed.author.name.slice(embed.author.name.indexOf('#') + 1,
+                                            embed.author.name.length);
+
+                                        // If the character already has a score, increase it, otherwise set it to 1
+                                        if (scannerDictionary[characterID] !== undefined) {
+                                            scannerDictionary[characterID] += 1;
+                                        } else {
+                                            scannerDictionary[characterID] = 1;
+                                        }
                                     }
                                 }
                                 break;

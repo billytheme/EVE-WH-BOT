@@ -235,6 +235,11 @@ export function catchupOnUpdates() {
     }
 }
 
+export function getSystemIDFromPathfinderID(pathfinderID: number) {
+    // Converts from a Pathfinder ID to a system ID, using the systemDictionary array
+    return systemDictionary[pathfinderID]
+}
+
 //Read and parse wormhole dictionary
 fs.readFile("data/wormholeDictionary.json", { encoding: 'utf-8', flag: 'r+' },
     function (err, fileData) {
