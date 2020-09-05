@@ -6,10 +6,12 @@ import { getAllianceName, getCharacterName, getCorporationName, isFriendlyKill, 
 
 function isKillInChain(killData): boolean {
     // Simple function that checks whether a given killData took place within the chain
-    if (pathfinder.getConnectedSystems().includes(killData.solar_system_id)) {
-        return true;
-    }
-    return false;
+    return pathfinder.getConnectedSystems().includes(killData.solar_system_id);
+}
+
+function isTodayKill(killData): boolean {
+    // If returns true if the kill is less than a day old
+    return Date.parse(killData.killmail_time) - Date.now() < 86400000;
 }
 
 export async function parseKill(event: { data: any, type: string }) {
