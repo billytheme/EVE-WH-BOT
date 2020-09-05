@@ -57,7 +57,11 @@ client.on('message', pathfinder.parseMessage)
 // Once we load, load any messages we missed while offline and parse them into memory
 client.on('ready', pathfinder.catchupOnUpdates);
 
+// Once we load, set our status to be b!help
 client.on('ready', function () {client.user.setActivity('b!help')})
+
+// Once per day, re-set the status
+schedule.scheduleJob('1 1 * * *', function () {client.user.setActivity('b!help')})
 
 // When we receive a message, pass it to the parse function
 client.on('message', scannerRanking.parseMessage)
