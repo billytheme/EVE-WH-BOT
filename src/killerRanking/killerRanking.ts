@@ -82,7 +82,7 @@ export async function generateRanking(forceMonth?: number) {
     }
 
     // Update our ranking list, and add any new messages sent to the rankingMessagesIDs array
-    rankingMessagesIDs.concat(await updateRankingList(killerDictionary, "PvP Ranking for " + currentMonth, 
+    rankingMessagesIDs = rankingMessagesIDs.concat(await updateRankingList(killerDictionary, "PvP Ranking for " + currentMonth, 
         process.env.KILLER_CHANNEL, rankingMessagesIDs))
 }
 

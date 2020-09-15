@@ -144,7 +144,7 @@ export async function generateRanking(forceMonth?: number) {
     }
 
     // Update our ranking list, and add any new messages sent to the rankingMessagesIDs array
-    rankingMessagesIDs.concat(await updateRankingList(scannerDictionary, "Scanner Ranking for " + currentMonth, 
+    rankingMessagesIDs = rankingMessagesIDs.concat(await updateRankingList(scannerDictionary, "Scanner Ranking for " + currentMonth, 
         process.env.SCANNER_CHANNEL, rankingMessagesIDs))
 }
 

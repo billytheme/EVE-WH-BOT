@@ -65,7 +65,7 @@ client.on('ready', scannerRanking.generateNewRankingMessage)
 client.on('ready', killerRanking.generateNewRankingMessage)
 
 // Once per day, re-set the status
-// Since this everything now takes place without user interaction, this is on necessary
+// Since this everything now takes place without user interaction, this is not necessary
 // schedule.scheduleJob('1 1 * * *', function () {client.user.setActivity('b!help')})
 
 // When we receive a message, pass it to the parse function
