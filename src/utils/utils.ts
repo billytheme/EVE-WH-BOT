@@ -2,7 +2,7 @@ import { getAllianceName } from "./getAllianceName"
 import { getCharacterName } from "./getCharacterName"
 import { getCorporationName } from "./getCorporationName"
 import { client } from "../app"
-import { TextChannel } from "discord.js"
+import { Snowflake, TextChannel } from "discord.js"
 import { getSystemRegion } from "./getSystemRegion"
 
 // Attach the other functions from other file to the exports of this one
@@ -52,7 +52,9 @@ export function isWormholeRegion(regionID: number): boolean {
     }
 }
 
-export async function sendRankingList(rankingList: Record<number, number>, fullList: boolean, mainTitle: string) {
+export async function updateRankingList(rankingList: Record<number, number>, mainTitle: string,
+    channelID: Snowflake, rankingMessagesIDs: Array<Snowflake>): Promise<Array<Snowflake>> {
+
     // Create a list of character IDs in the dictionary
     let sortedList: Array<number> = [];
     for (const characterID in rankingList) {
@@ -69,17 +71,9 @@ export async function sendRankingList(rankingList: Record<number, number>, fullL
     let rankingStrings: Array<string> = [''];
     let rankingStringIndex = 0;
     let currentRanking = 1;
-    let listLength: number;
-
-    // Set the length of the list that we want
-    if (fullList) {
-        listLength = sortedList.length;
-    } else {
-        listLength = Math.min(20, sortedList.length);
-    }
 
     //Create the list entries. Repeat the number of times specified above
-    for (let index = 0; index < listLength; index++) {
+    for (let index = 0; index < sortedList.length; index++) {
         let newEntry = currentRanking + ': ' + (await getCharacterName(sortedList[index])) + ' - ' + rankingList[sortedList[index]] + ' points\n'
 
         // If the length would surpass the maximum length, make a new string
@@ -93,10 +87,13 @@ export async function sendRankingList(rankingList: Record<number, number>, fullL
         currentRanking += 1;
     }
 
+    // List of new messages used
+    let newMessages: Array<Snowflake> = []
+
     // Generate the embed objects
-    for (const rankingString of rankingStrings) {
+    for (let i = 0; i < rankingStrings.length; i++) {
         let title: string
-        if (rankingStrings.indexOf(rankingString) === 0) {
+        if (rankingStrings.indexOf(rankingStrings[i]) === 0) {
             title = mainTitle
         }
         else {
@@ -106,11 +103,21 @@ export async function sendRankingList(rankingList: Record<number, number>, fullL
         let listEmbed = {
             title: title,
             color: 0x1120f0,
-            description: rankingString
+            description: rankingStrings[i]
         }
 
-        // Send the embed object
-        let channel = <TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
-        channel.send({ embed: listEmbed })
+        if (rankingMessagesIDs[i] !== undefined) {
+            // Update the message with the embed object
+            let message = await (<TextChannel>(await client.channels.fetch(channelID))).messages.fetch(rankingMessagesIDs[i]);
+            message.edit({ embed: listEmbed })
+        }
+        else {
+            // Not enough messages, need to send another, and save the snowflake
+            let channel = <TextChannel>(await client.channels.fetch(channelID))
+            newMessages.push((await channel.send({ embed: listEmbed })).id)
+        }
     }
+
+    //Return the new messages that were created
+    return newMessages
 }

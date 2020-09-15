@@ -84,6 +84,6 @@ async function generateAlert(killData: any) {
     };
 
     // Send the embed
-    let channel = <discord.TextChannel>client.channels.cache.get(process.env.BOT_CHANNEL);
+    let channel = <discord.TextChannel>client.channels.cache.get(process.env.ALERTS_CHANNEL);
     channel.send({ embed: alertEmbed });
 }

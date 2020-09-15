@@ -1,8 +1,14 @@
 import { isfriendlyAttackers } from "../utils/utils"
 import * as fs from "fs"
-import { sendRankingList, getCharacterName } from "../utils/utils"
+import { updateRankingList, getCharacterName } from "../utils/utils"
+import { Snowflake, TextChannel } from "discord.js"
+import { client } from "../app"
 
+// 1 point per kill
 let killerDictionary: Record<number, number> = {};
+
+// Array containing the messageIDs containing this month's rankings
+let rankingMessagesIDs: Array<Snowflake> = []
 
 export function parseKill(event: { data: any, type: string }) {
     // parse the stringified data into an object we can process
@@ -33,12 +39,35 @@ export function resetRankings() {
     // write the new (empty dictionary)
 
     // Force the previous month, as this will be run in the new month, but be about the old month
-    generateRanking(new Date(Date.now()).getMonth() - 1, true);
+    generateRanking(new Date(Date.now()).getMonth() - 1);
     killerDictionary = {}
     writeKillerDictionary();
+    generateNewRankingMessage()
 }
 
-export async function generateRanking(forceMonth?: number, fullList?: boolean) {
+export async function generateNewRankingMessage() {
+    // Generates a new message for us to edit. Should be called at the start of each month
+
+    // First we forget the old list of messages
+    rankingMessagesIDs = []
+
+    // Since JS does not give any easy ways to convert from month integer to month string, 
+    // we have an array to convert from one to the other
+    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let currentMonth = months[new Date(Date.now()).getMonth()];
+
+    // Create an initial message for the month, then send it, and add its ID to the rankingMessagesIDs array
+    rankingMessagesIDs.push((await (<TextChannel>(await client.channels.fetch(process.env.KILLER_CHANNEL))).send({
+        embed: {
+            title: "PvP Ranking for " + currentMonth + " " + new Date(Date.now()).getFullYear(),
+            color: 0x1120f0,
+        }
+    })).id)
+
+    generateRanking()
+}
+
+export async function generateRanking(forceMonth?: number) {
     // Since JS does not give any easy ways to convert from month integer to month string, 
     // we have an array to convert from one to the other
     let currentMonth: string
@@ -52,11 +81,13 @@ export async function generateRanking(forceMonth?: number, fullList?: boolean) {
         currentMonth = months[forceMonth]
     }
 
-    sendRankingList(killerDictionary, fullList, "PvP ranking for " + currentMonth)
+    // Update our ranking list, and add any new messages sent to the rankingMessagesIDs array
+    rankingMessagesIDs.concat(await updateRankingList(killerDictionary, "PvP Ranking for " + currentMonth, 
+        process.env.KILLER_CHANNEL, rankingMessagesIDs))
 }
 
 function writeKillerDictionary() {
-    // Write the scannerDictionary to a file to load if the server crashes
+    // Write the killerDictionary to a file to load if the server crashes
     fs.writeFileSync("data/killerDictionary.json", JSON.stringify(killerDictionary));
 }
 

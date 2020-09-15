@@ -1,11 +1,15 @@
-import { Message, MessageEmbed, TextChannel } from "discord.js"
+import { Message, MessageEmbed, Snowflake, TextChannel } from "discord.js"
 import * as fs from "fs"
-import { sendRankingList, getCharacterName } from "../utils/utils"
+import { updateRankingList, getCharacterName } from "../utils/utils"
 import { getConnectedSystems, getSystemIDFromPathfinderID } from "../pathfinderParse/pathfinderParse"
+import { client } from "../app"
 
 //1 point for scanning a signature to group
 //1 point for scanning a wormhole and jumping it (in addition)
 let scannerDictionary: Record<number, number> = {};
+
+// Array containing the messageIDs containing this month's rankings
+let rankingMessagesIDs: Array<Snowflake> = []
 
 export function parseMessage(message: Message) {
     // Checks the message came from the correct channel and that it contains embeds
@@ -97,12 +101,35 @@ export function resetRankings() {
     // write the new (empty dictionary)
 
     // Force the previous month, as this will be run in the new month, but be about the old month
-    generateRanking(new Date(Date.now()).getMonth() - 1, true);
+    generateRanking(new Date(Date.now()).getMonth() - 1);
     scannerDictionary = {}
     writeScannerDictionary();
+    generateNewRankingMessage();
 }
 
-export async function generateRanking(forceMonth?: number, fullList?: boolean) {
+export async function generateNewRankingMessage() {
+    // Generates a new message for us to edit. Should be called at the start of each month
+
+    // First we forget the old list of messages
+    rankingMessagesIDs = []
+
+    // Since JS does not give any easy ways to convert from month integer to month string, 
+    // we have an array to convert from one to the other
+    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let currentMonth = months[new Date(Date.now()).getMonth()];
+
+    // Create an initial message for the month, then send it, and add its ID to the rankingMessagesIDs array
+    rankingMessagesIDs.push((await (<TextChannel>(await client.channels.fetch(process.env.SCANNER_CHANNEL))).send({
+        embed: {
+            title: "Scanner Ranking for " + currentMonth + " " + new Date(Date.now()).getFullYear(),
+            color: 0x1120f0,
+        }
+    })).id)
+
+    generateRanking()
+}
+
+export async function generateRanking(forceMonth?: number) {
     // Since JS does not give any easy ways to convert from month integer to month string, 
     // we have an array to convert from one to the other
     let currentMonth: string
@@ -116,7 +143,9 @@ export async function generateRanking(forceMonth?: number, fullList?: boolean) {
         currentMonth = months[forceMonth]
     }
 
-    sendRankingList(scannerDictionary, fullList, "Scanner Ranking for " + currentMonth)
+    // Update our ranking list, and add any new messages sent to the rankingMessagesIDs array
+    rankingMessagesIDs.concat(await updateRankingList(scannerDictionary, "Scanner Ranking for " + currentMonth, 
+        process.env.SCANNER_CHANNEL, rankingMessagesIDs))
 }
 
 // Read the signature data from file on load
