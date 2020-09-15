@@ -76,5 +76,5 @@ schedule.scheduleJob('1 1 1 * *', scannerRanking.resetRankings)
 schedule.scheduleJob('1 1 1 * *', killerRanking.resetRankings)
 
 // Once every 5 mins, update the rankings
-setInterval(scannerRanking.generateRanking, 120000)
-setInterval(killerRanking.generateRanking, 120000)
+setInterval(scannerRanking.generateRanking, 300000)
+setInterval(killerRanking.generateRanking, 300000)
