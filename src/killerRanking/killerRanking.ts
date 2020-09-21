@@ -82,13 +82,20 @@ export async function generateRanking(forceMonth?: number) {
     }
 
     // Update our ranking list, and add any new messages sent to the rankingMessagesIDs array
-    rankingMessagesIDs = rankingMessagesIDs.concat(await updateRankingList(killerDictionary, "PvP Ranking for " + currentMonth, 
+    rankingMessagesIDs = rankingMessagesIDs.concat(await updateRankingList(killerDictionary, "PvP Ranking for " + currentMonth,
         process.env.KILLER_CHANNEL, rankingMessagesIDs))
+
+    writeScannerMessageIDs()
 }
 
 function writeKillerDictionary() {
     // Write the killerDictionary to a file to load if the server crashes
     fs.writeFileSync("data/killerDictionary.json", JSON.stringify(killerDictionary));
+}
+
+function writeScannerMessageIDs() {
+    // Write the scannerDictionary to a file to load later
+    fs.writeFileSync("data/killerRankingMessages.json", JSON.stringify(rankingMessagesIDs));
 }
 
 // On server load, we grab the data from before the crash
@@ -106,5 +113,18 @@ fs.readFile("data/killerDictionary.json", { encoding: 'utf-8', flag: 'r+' }, fun
     }
     catch (err) {
         killerDictionary = {}
+    }
+})
+
+// Read the messageIDs from file on load
+fs.readFile("data/killerRankingMessages.json", { encoding: 'utf-8', flag: 'r+' }, function (err, fileData) {
+    if (err) {
+        console.error(err);
+    }
+    try {
+        rankingMessagesIDs = JSON.parse(fileData)
+    }
+    catch (err) {
+        rankingMessagesIDs = []
     }
 })

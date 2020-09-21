@@ -60,10 +60,6 @@ client.on('ready', pathfinder.catchupOnUpdates);
 // Once we load, set our status to be b!help
 client.on('ready', function () {client.user.setActivity('b!help')})
 
-// Generate our ranking messages to be edited
-client.on('ready', scannerRanking.generateNewRankingMessage)
-client.on('ready', killerRanking.generateNewRankingMessage)
-
 // Once per day, re-set the status
 // Since this everything now takes place without user interaction, this is not necessary
 // schedule.scheduleJob('1 1 * * *', function () {client.user.setActivity('b!help')})

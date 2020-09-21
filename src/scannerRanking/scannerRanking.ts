@@ -146,6 +146,9 @@ export async function generateRanking(forceMonth?: number) {
     // Update our ranking list, and add any new messages sent to the rankingMessagesIDs array
     rankingMessagesIDs = rankingMessagesIDs.concat(await updateRankingList(scannerDictionary, "Scanner Ranking for " + currentMonth, 
         process.env.SCANNER_CHANNEL, rankingMessagesIDs))
+
+    // Write Messages to file in case of crash
+    writeScannerMessageIDs()
 }
 
 // Read the signature data from file on load
@@ -166,3 +169,20 @@ fs.readFile("data/scannerDictionary.json", { encoding: 'utf-8', flag: 'r+' }, fu
     }
 })
 
+function writeScannerMessageIDs() {
+    // Write the scannerDictionary to a file to load later
+    fs.writeFileSync("data/scannerRankingMessages.json", JSON.stringify(rankingMessagesIDs));
+}
+
+// Read the messageIDs from file on load
+fs.readFile("data/scannerRankingMessages.json", { encoding: 'utf-8', flag: 'r+' }, function (err, fileData) {
+    if (err) {
+        console.error(err);
+    }
+    try {
+        rankingMessagesIDs = JSON.parse(fileData)
+    }
+    catch (err) {
+        rankingMessagesIDs = []
+    }
+})
