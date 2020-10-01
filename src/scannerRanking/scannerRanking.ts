@@ -96,15 +96,15 @@ function writeScannerDictionary() {
     fs.writeFileSync("data/scannerDictionary.json", JSON.stringify(scannerDictionary));
 }
 
-export function resetRankings() {
+export async function resetRankings() {
     // Generate the ranking and send it to discord, reset the rankings, and 
     // write the new (empty dictionary)
 
     // Force the previous month, as this will be run in the new month, but be about the old month
-    generateRanking(new Date(Date.now()).getMonth() - 1);
+    await generateRanking(new Date(Date.now()).getMonth() - 1);
     scannerDictionary = {}
     writeScannerDictionary();
-    generateNewRankingMessage();
+    await generateNewRankingMessage();
 }
 
 export async function generateNewRankingMessage() {
