@@ -41,31 +41,32 @@ export async function resetRankings() {
     // Force the previous month, as this will be run in the new month, but be about the old month
     await generateRanking(new Date(Date.now()).getMonth() - 1);
     killerDictionary = {}
-    writeKillerDictionary();
-    await generateNewRankingMessage()
-}
-
-export async function generateNewRankingMessage() {
-    // Generates a new message for us to edit. Should be called at the start of each month
-
-    // First we forget the old list of messages
     rankingMessagesIDs = []
-
-    // Since JS does not give any easy ways to convert from month integer to month string, 
-    // we have an array to convert from one to the other
-    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    let currentMonth = months[new Date(Date.now()).getMonth()];
-
-    // Create an initial message for the month, then send it, and add its ID to the rankingMessagesIDs array
-    rankingMessagesIDs.push((await (<TextChannel>(await client.channels.fetch(process.env.KILLER_CHANNEL))).send({
-        embed: {
-            title: "PvP Ranking for " + currentMonth + " " + new Date(Date.now()).getFullYear(),
-            color: 0x1120f0,
-        }
-    })).id)
-
-    generateRanking()
+    writeKillerDictionary();
+    await generateRanking()
 }
+
+// export async function generateNewRankingMessage() {
+//     // Generates a new message for us to edit. Should be called at the start of each month
+
+//     // First we forget the old list of messages
+//     rankingMessagesIDs = []
+
+//     // Since JS does not give any easy ways to convert from month integer to month string, 
+//     // we have an array to convert from one to the other
+//     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+//     let currentMonth = months[new Date(Date.now()).getMonth()];
+
+//     // Create an initial message for the month, then send it, and add its ID to the rankingMessagesIDs array
+//     rankingMessagesIDs.push((await (<TextChannel>(await client.channels.fetch(process.env.KILLER_CHANNEL))).send({
+//         embed: {
+//             title: "PvP Ranking for " + currentMonth + " " + new Date(Date.now()).getFullYear(),
+//             color: 0x1120f0,
+//         }
+//     })).id)
+
+//     generateRanking()
+// }
 
 export async function generateRanking(forceMonth?: number) {
     // Since JS does not give any easy ways to convert from month integer to month string, 
