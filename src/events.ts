@@ -4,52 +4,60 @@ import * as zKillboardWatch from "./zKillboardWatch/zKillboardWatch"
 import * as scannerRanking from "./scannerRanking/scannerRanking"
 import * as killerRanking from "./killerRanking/killerRanking"
 import * as schedule from "node-schedule"
-import * as webSocket from "ws"
-import { clearInterval } from "timers"
+import * as rq from "request"
+// import * as webSocket from "ws"
+// import { clearInterval } from "timers"
 
-let zKill: webSocket;
-let reconnectGenerator: NodeJS.Timeout;
-let tryingToReconnect: boolean;
+setInterval(() => rq("https://redisq.zkillboard.com/listen.php", (error, response, body) => {
+        killerRanking.parseKill(body)
+        zKillboardWatch.parseKill(body)
+    }), 1000)
 
-function runReconnect() {
-    // If the webSocket connection is broken, it will not reestablish connection, so we have to 
-    // detect and reconnect manually.
+// THIS IS ALL WEBSOCKET CODE. ZKILL BROKE WEBSOCKETS, SO WE'VE MOVED TO REDISQ FOR THE MOMENT
 
-    // Initialise the Websocket for the zKill API
-    zKill = new webSocket("wss://zkillboard.com/websocket/")
+// let zKill: webSocket;
+// let reconnectGenerator: NodeJS.Timeout;
+// let tryingToReconnect: boolean;
 
-    // Subscribe to the killfeed to get kills as they happen, as well as clearing the reconnect 
-    // generator if it was running
-    zKill.addEventListener('open', function () {
-        tryingToReconnect = false;
-        clearInterval(reconnectGenerator)
+// function runReconnect() {
+//     // If the webSocket connection is broken, it will not reestablish connection, so we have to 
+//     // detect and reconnect manually.
 
-        zKill.send(JSON.stringify({
-            "action": "sub",
-            "channel": "killstream"
-        }));
-    })
+//     // Initialise the Websocket for the zKill API
+//     zKill = new webSocket("wss://zkillboard.com/websocket/")
 
-    // When we get a kill from zKill, check whether the friendly alliance was involved and whether it 
-    // Occured in the pathfinder chain. If yes to both, then alert
-    zKill.addEventListener('message', zKillboardWatch.parseKill);
+//     // Subscribe to the killfeed to get kills as they happen, as well as clearing the reconnect 
+//     // generator if it was running
+//     zKill.addEventListener('open', function () {
+//         tryingToReconnect = false;
+//         clearInterval(reconnectGenerator)
 
-    // Check whether the kill included friendly attackers, and if so update the kill rankings
-    zKill.addEventListener('message', killerRanking.parseKill);
+//         zKill.send(JSON.stringify({
+//             "action": "sub",
+//             "channel": "killstream"
+//         }));
+//     })
 
-    // If the connection is closed, check that we are not already running the function (this is
-    // because if the server is not up again yet, it will generate another close message). If not,
-    // start it.
-    zKill.addEventListener('close', function () {
-        if (!tryingToReconnect) {
-            tryingToReconnect = true;
-            reconnectGenerator = setInterval(runReconnect, 5000);
-        }
-    })
-}
+//     // When we get a kill from zKill, check whether the friendly alliance was involved and whether it 
+//     // Occured in the pathfinder chain. If yes to both, then alert
+//     zKill.addEventListener('message', zKillboardWatch.parseKill);
 
-// Start the websocket
-runReconnect()
+//     // Check whether the kill included friendly attackers, and if so update the kill rankings
+//     zKill.addEventListener('message', killerRanking.parseKill);
+
+//     // If the connection is closed, check that we are not already running the function (this is
+//     // because if the server is not up again yet, it will generate another close message). If not,
+//     // start it.
+//     zKill.addEventListener('close', function () {
+//         if (!tryingToReconnect) {
+//             tryingToReconnect = true;
+//             reconnectGenerator = setInterval(runReconnect, 5000);
+//         }
+//     })
+// }
+
+// // Start the websocket
+// runReconnect()
 
 // When we receive a message, pass it to the parse function
 client.on('message', pathfinder.parseMessage)
