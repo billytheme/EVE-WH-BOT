@@ -5,7 +5,7 @@ let killerRanking = rewire("../src/killerRanking/killerRanking")
 
 describe('killerRanking', function () {
     describe('parseKill', function () {
-        it('should not add points if attackers were not in exit', function () {
+        it('should not add points if attackers were not in Unchained', function () {
             killerRanking.__with__({
                 killerDictionary: {}
             })(function () {
@@ -61,7 +61,7 @@ let friendlyVictim = {
         {
             alliance_id: 99002584,
             character_id: 90204495,
-            corporation_id: 98232099,
+            corporation_id: 98246668,
             damage_done: 140,
             faction_id: 500002,
             final_blow: true,
