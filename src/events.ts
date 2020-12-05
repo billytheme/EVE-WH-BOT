@@ -9,9 +9,11 @@ import * as rq from "request"
 // import { clearInterval } from "timers"
 
 setInterval(() => rq("https://redisq.zkillboard.com/listen.php", (error, response, body) => {
+    if (!error) {
         killerRanking.parseKill(body)
         zKillboardWatch.parseKill(body)
-    }), 1000)
+    }
+}), 1000)
 
 // THIS IS ALL WEBSOCKET CODE. ZKILL BROKE WEBSOCKETS, SO WE'VE MOVED TO REDISQ FOR THE MOMENT
 
@@ -66,7 +68,7 @@ client.on('message', pathfinder.parseMessage)
 client.on('ready', pathfinder.catchupOnUpdates);
 
 // Once we load, set our status to be b!help
-client.on('ready', function () {client.user.setActivity('b!help')})
+client.on('ready', function () { client.user.setActivity('b!help') })
 
 // Once per day, re-set the status
 // Since this everything now takes place without user interaction, this is not necessary

@@ -11,7 +11,6 @@ let killerDictionary: Record<number, number> = {};
 let rankingMessagesIDs: Array<Snowflake> = []
 
 export function parseKill(event: string) {
-
     // parse the stringified data into an object we can process
     let killData = JSON.parse(event).package.killmail;
 
