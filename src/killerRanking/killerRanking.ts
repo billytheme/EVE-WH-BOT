@@ -10,11 +10,7 @@ let killerDictionary: Record<number, number> = {};
 // Array containing the messageIDs containing this month's rankings
 let rankingMessagesIDs: Array<Snowflake> = []
 
-<<<<<<< HEAD
-export function parseKill(event: string) {
-=======
 export function parseKill(event: { data: any, type: string }) {
->>>>>>> parent of e4755bf... Hacky fix to zKill Websocket crash
     // parse the stringified data into an object we can process
     let killData = JSON.parse(event.data);
 
