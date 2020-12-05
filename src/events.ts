@@ -9,7 +9,7 @@ import * as rq from "request"
 // import { clearInterval } from "timers"
 
 setInterval(() => rq("https://redisq.zkillboard.com/listen.php", (error, response, body) => {
-    if (!error) {
+    if (body !== '' && !error) {
         killerRanking.parseKill(body)
         zKillboardWatch.parseKill(body)
     }
